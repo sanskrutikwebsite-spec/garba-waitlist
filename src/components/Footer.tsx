@@ -20,12 +20,12 @@ export default function Footer() {
         {/* Brand Column */}
         <div className="flex flex-col items-center md:items-start col-span-1 md:col-span-2">
           <Link href="/">
-            <div className="relative w-64 h-24 md:w-72 md:h-28 mb-6">
+            <div className="relative w-80 h-32 md:w-96 md:h-40 mb-6">
               <Image 
                 src="/logo-sg.png" 
                 alt="Logo" 
                 fill
-                className="object-contain object-center md:object-left mix-blend-multiply"
+                className="object-contain object-center md:object-left mix-blend-multiply scale-110 md:scale-125 origin-center md:origin-left"
               />
             </div>
           </Link>
@@ -55,7 +55,6 @@ export default function Footer() {
           <h4 className="text-brand-primary font-bold tracking-widest uppercase mb-6 text-sm">Information</h4>
           <ul className="flex flex-col gap-4 font-bold text-sm text-center md:text-left">
             <li><Link href="/contact" className="hover:text-brand-primary transition-colors">Contact Us</Link></li>
-            <li><Link href="/connect" className="hover:text-brand-primary transition-colors">Sponsors & Stalls</Link></li>
             <li><Link href="/privacy" className="hover:text-brand-primary transition-colors">Privacy Policy</Link></li>
           </ul>
         </div>

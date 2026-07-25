@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useState } from "react";
 
 const fadeUp: Variants = {
@@ -14,12 +14,8 @@ const faqs = [
     answer: "The dates and exact venue are currently being finalized. By joining the waitlist, you'll be the first to know as soon as the official announcement is made."
   },
   {
-    question: "How can I book a stall or become a sponsor?",
-    answer: "Please navigate to our 'Connect with Us' page via the footer and submit a Sponsorship or Stall Booking inquiry. Our team will get back to you with the available packages."
-  },
-  {
     question: "Is there a dress code?",
-    answer: "Yes, to honor the cultural significance of the event, traditional Navratri attire (Chaniya Choli for women, Kediya for men) is highly encouraged."
+    answer: "Yes, to honor the cultural significance of the event, traditional Navratri attire (Chaniya Choli for women, Kurta for men) is highly encouraged."
   },
   {
     question: "Are children allowed?",
@@ -32,7 +28,7 @@ export default function FAQPage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-[#fcfaf5] text-foreground relative py-24 lg:py-32 px-6">
-      
+
       {/* Background */}
       <div className="absolute inset-0 z-0 fixed pointer-events-none bg-[#EAD7B7]">
         <div className="block md:hidden absolute inset-0">
@@ -44,20 +40,20 @@ export default function FAQPage() {
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto w-full flex flex-col items-center">
-        
-        <motion.div 
+
+        <motion.div
           initial="hidden" animate="visible" variants={fadeUp}
           className="text-center mb-16"
         >
           <h1 className="text-5xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-tight drop-shadow-sm mb-4">
-            Frequently <br/>
+            Frequently <br />
             <span className="text-brand-primary italic">Asked Questions</span>
           </h1>
         </motion.div>
 
         <div className="w-full flex flex-col gap-4">
           {faqs.map((faq, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -71,9 +67,9 @@ export default function FAQPage() {
                   {openIndex === index ? "−" : "+"}
                 </span>
               </div>
-              
+
               {openIndex === index && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   className="mt-4 pt-4 border-t border-brand-primary/20"

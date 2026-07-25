@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { useState } from "react";
+import { motion, Variants } from "framer-motion";
 
 // Reusable animation variants
 const fadeUp: Variants = {
@@ -17,12 +18,42 @@ const staggerContainer = {
   }
 };
 
-const imageReveal: Variants = {
+const imageReveal = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } }
 };
 
 export default function Home() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(false);
+
+    const formData = new FormData(e.currentTarget);
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/sanskrutikwebsite@gmail.com", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      setError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="flex flex-col bg-[#fcfaf5] selection:bg-brand-primary selection:text-white font-sans text-foreground relative">
 
@@ -62,14 +93,14 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.95, filter: "blur(5px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
-            className="relative w-[250px] h-[250px] sm:w-[350px] sm:h-[350px] lg:w-[450px] lg:h-[450px] mix-blend-multiply drop-shadow-sm"
+            className="relative w-[300px] h-[300px] sm:w-[450px] sm:h-[450px] lg:w-[650px] lg:h-[650px] mx-auto flex justify-center items-center mix-blend-multiply drop-shadow-sm"
           >
             <Image
               src="/logo-sg.png"
               alt="Sanskrutik Sheri Garba Logo"
               fill
               priority
-              className="object-contain"
+              className="object-contain object-center"
             />
           </motion.div>
 
@@ -110,7 +141,7 @@ export default function Home() {
               "0712 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "1662 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "0092 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1451 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
+              "0985 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "1095 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "0493 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "1600 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
@@ -131,7 +162,7 @@ export default function Home() {
               "0712 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "1662 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "0092 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1451 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
+              "0985 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "1095 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "0493 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
               "1600 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
@@ -187,17 +218,7 @@ export default function Home() {
             </p>
 
             {/* Social Proof Counter */}
-            <div className="mt-8 flex items-center gap-4">
-              <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full border-2 border-[#fcfaf5] bg-brand-primary flex items-center justify-center text-xs font-bold text-white shadow-sm">VP</div>
-                <div className="w-10 h-10 rounded-full border-2 border-[#fcfaf5] bg-foreground flex items-center justify-center text-xs font-bold text-white shadow-sm">SK</div>
-                <div className="w-10 h-10 rounded-full border-2 border-[#fcfaf5] bg-[#E3C57F] flex items-center justify-center text-xs font-bold text-white shadow-sm">RP</div>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-brand-primary text-xl">352 +</span>
-                <span className="text-xs font-bold uppercase tracking-widest text-foreground/60">Already Joined</span>
-              </div>
-            </div>
+
           </motion.div>
 
           {/* Right: The Minimalist Form */}
@@ -208,12 +229,24 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, margin: "0px" }}
           >
+            {isSubmitted ? (
+              <div className="flex flex-col items-center justify-center gap-6 py-12 text-center bg-white/40 backdrop-blur-sm p-8 border-l border-[#E3C57F]">
+                <h3 className="text-3xl font-bold text-brand-primary">Submitted!</h3>
+                <p className="text-xl font-medium text-foreground/80">Thank you for joining our waitlist.</p>
+                <button 
+                  onClick={() => setIsSubmitted(false)}
+                  className="mt-4 px-8 py-4 bg-brand-primary text-white rounded-none font-bold text-lg hover:bg-brand-primary/90 transition-colors uppercase tracking-widest text-sm"
+                >
+                  Submit again
+                </button>
+              </div>
+            ) : (
             <form
-              action="https://formsubmit.co/Sanskrutikgarba@gmail.com"
-              method="POST"
+              onSubmit={handleSubmit}
               className="flex flex-col gap-10"
             >
               <input type="hidden" name="_subject" value="New Waitlist Entry - Navratri Garba!" />
+              <input type="hidden" name="_cc" value="Sanskrutikgarba@gmail.com" />
               <input type="hidden" name="_template" value="table" />
               <input type="hidden" name="_captcha" value="false" />
 
@@ -268,15 +301,36 @@ export default function Home() {
                 </label>
               </motion.div>
 
+              <motion.div variants={fadeUp} className="flex flex-col gap-4 mt-2">
+                <p className="text-foreground/90 text-xs font-bold uppercase tracking-[0.2em]">Notify me via:</p>
+                <div className="flex flex-wrap gap-8">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" name="notify_whatsapp" value="yes" className="w-4 h-4 accent-brand-primary cursor-pointer" />
+                    <span className="text-foreground text-sm font-semibold group-hover:text-brand-primary transition-colors">WhatsApp</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" name="notify_sms" value="yes" className="w-4 h-4 accent-brand-primary cursor-pointer" />
+                    <span className="text-foreground text-sm font-semibold group-hover:text-brand-primary transition-colors">SMS</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" name="notify_email" value="yes" className="w-4 h-4 accent-brand-primary cursor-pointer" defaultChecked />
+                    <span className="text-foreground text-sm font-semibold group-hover:text-brand-primary transition-colors">Email</span>
+                  </label>
+                </div>
+              </motion.div>
+
               <motion.button
                 variants={fadeUp}
                 type="submit"
-                className="mt-6 self-start flex items-center gap-4 bg-foreground hover:bg-foreground/80 text-white font-semibold py-4 px-10 rounded-none transition-all duration-300 group"
+                disabled={isSubmitting}
+                className="mt-6 self-start flex items-center gap-4 bg-foreground hover:bg-foreground/80 text-white font-semibold py-4 px-10 rounded-none transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="text-sm tracking-[0.2em] uppercase">Join The Waitlist</span>
+                <span className="text-sm tracking-[0.2em] uppercase">{isSubmitting ? "Submitting..." : "Join The Waitlist"}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
               </motion.button>
+              {error && <p className="text-red-500 text-sm font-bold mt-2">Something went wrong. Please try again.</p>}
             </form>
+            )}
           </motion.div>
 
         </div>

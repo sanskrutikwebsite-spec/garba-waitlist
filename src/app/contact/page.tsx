@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { useState } from "react";
+import { motion, Variants } from "framer-motion";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -8,6 +9,36 @@ const fadeUp: Variants = {
 };
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(false);
+
+    const formData = new FormData(e.currentTarget);
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/sanskrutikwebsite@gmail.com", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      setError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="flex flex-col min-h-screen bg-[#fcfaf5] text-foreground relative overflow-hidden pt-24 lg:pt-32 px-6">
       
@@ -58,11 +89,23 @@ export default function ContactPage() {
             <h2 className="text-3xl font-extrabold text-foreground mb-12 text-center">Send a Message</h2>
 
             {/* FormSubmit.co Form */}
-            <form action="https://formsubmit.co/Sanskrutikgarba@gmail.com" method="POST" className="relative z-10 flex flex-col gap-10">
-              <input type="hidden" name="_subject" value="New General Inquiry from Website!" />
-              <input type="hidden" name="_captcha" value="false" />
-              <input type="hidden" name="_template" value="table" />
-              <input type="hidden" name="_next" value="https://garba.sanskrutiksheri.com/contact" />
+            {isSubmitted ? (
+              <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
+                <h3 className="text-3xl font-bold text-brand-primary">Message Submitted!</h3>
+                <p className="text-xl font-medium text-foreground/80">Thank you for reaching out. We will get back to you soon.</p>
+                <button 
+                  onClick={() => setIsSubmitted(false)}
+                  className="mt-4 px-8 py-4 bg-brand-primary text-white rounded-full font-bold text-lg hover:bg-brand-primary/90 transition-colors"
+                >
+                  Submit another message
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-10">
+                <input type="hidden" name="_subject" value="New General Inquiry from Website!" />
+                <input type="hidden" name="_cc" value="Sanskrutikgarba@gmail.com" />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
 
               <div className="flex flex-col relative group">
                 <input type="text" name="name" required placeholder=" "
@@ -104,11 +147,13 @@ export default function ContactPage() {
                 <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-primary transition-all duration-300 peer-focus:w-full"></div>
               </div>
 
-              <button type="submit" className="mt-8 w-full bg-foreground text-white font-bold text-lg tracking-[0.2em] uppercase py-6 rounded-2xl hover:bg-brand-primary transition-colors duration-500 shadow-xl group relative overflow-hidden">
-                <span className="relative z-10">Send Message</span>
+              <button type="submit" disabled={isSubmitting} className="mt-8 w-full bg-foreground text-white font-bold text-lg tracking-[0.2em] uppercase py-6 rounded-2xl hover:bg-brand-primary transition-colors duration-500 shadow-xl group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
+                <span className="relative z-10">{isSubmitting ? "Sending..." : "Send Message"}</span>
                 <div className="absolute inset-0 bg-brand-primary translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-out z-0"></div>
               </button>
+              {error && <p className="text-red-500 text-center mt-4">Something went wrong. Please try again.</p>}
             </form>
+            )}
           </motion.div>
         </div>
       </div>
