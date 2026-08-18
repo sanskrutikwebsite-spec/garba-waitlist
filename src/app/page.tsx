@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
+import { useState, useEffect } from "react";
 
 // Reusable animation variants
 const fadeUp: Variants = {
@@ -19,6 +20,16 @@ const staggerContainer = {
 };
 
 export default function Home() {
+  const [isEarlyBird, setIsEarlyBird] = useState(true);
+
+  useEffect(() => {
+    // Cutoff: 72 hrs from tomorrow (assuming tomorrow is Aug 19 -> Aug 22 00:00)
+    const cutoff = new Date("2026-08-22T00:00:00+05:30");
+    if (new Date() >= cutoff) {
+      setIsEarlyBird(false);
+    }
+  }, []);
+
   return (
     <main className="flex flex-col bg-[#fcfaf5] selection:bg-brand-primary selection:text-white font-sans text-foreground relative">
 
@@ -172,7 +183,10 @@ export default function Home() {
               <span className="text-brand-primary italic">Join Us?</span>
             </h2>
             <p className="text-xl lg:text-2xl text-foreground/80 font-medium max-w-2xl">
-              Secure your passes now. Experience the rhythm, the colors, and the unmatched energy of Sanskrutik Sheri Garba.
+              Secure your passes now. Experience the rhythm, the colors, and the unmatched energy of Sanskrutik Sheri Garba. <br />
+              <span className="text-brand-primary font-bold">
+                {isEarlyBird ? "Early Bird Price: ₹2700 per pass" : "Price: ₹3000 per pass"}
+              </span>
             </p>
             <Link 
               href="/checkout"

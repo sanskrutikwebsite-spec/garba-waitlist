@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
@@ -22,6 +22,15 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(false);
+  const [isEarlyBird, setIsEarlyBird] = useState(true);
+
+  useEffect(() => {
+    // Cutoff: 72 hrs from tomorrow (assuming tomorrow is Aug 19 -> Aug 22 00:00)
+    const cutoff = new Date("2026-08-22T00:00:00+05:30");
+    if (new Date() >= cutoff) {
+      setIsEarlyBird(false);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,6 +64,10 @@ export default function CheckoutPage() {
           </h1>
           <p className="text-foreground/80 mt-4 text-lg">
             Secure your spot by filling out the details below and uploading your payment screenshot.
+            <br />
+            <span className="font-bold text-brand-primary">
+              {isEarlyBird ? "Early Bird Price: ₹2700 per pass" : "Price: ₹3000 per pass"}
+            </span>
           </p>
           <p className="text-sm mt-4 font-bold text-foreground/60">
             Having trouble? <Link href="/help" className="text-brand-primary hover:underline">Visit our Help Center</Link>
@@ -168,7 +181,7 @@ export default function CheckoutPage() {
                   
                   <div className="w-full md:w-1/2 flex flex-col gap-6">
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      Please make the payment for your passes using the QR code. After successful payment, upload the screenshot here.
+                      Please make the payment for your passes using the QR code (<span className="font-bold text-brand-primary">{isEarlyBird ? "₹2700 per pass" : "₹3000 per pass"}</span>). After successful payment, upload the screenshot here.
                     </p>
                     <div className="relative group mt-4">
                       <input
