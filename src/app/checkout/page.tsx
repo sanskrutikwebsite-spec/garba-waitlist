@@ -82,8 +82,11 @@ export default function CheckoutPage() {
         >
           {isSubmitted ? (
             <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
-              <h3 className="text-3xl font-bold text-brand-primary">Registration Pending!</h3>
-              <p className="text-xl font-medium text-foreground/80">Thank you for submitting your payment. We will verify it and send your passes to your WhatsApp and Email soon.</p>
+              <h3 className="text-xl font-bold text-brand-primary uppercase">Thank you for the incredible love and interest you have shown</h3>
+              <h3 className="text-3xl font-bold text-brand-primary uppercase mt-2">Registration Pending!</h3>
+              <p className="text-lg font-medium text-foreground/80 mt-4 uppercase">
+                Once your booking and payment are successful, you will receive a confirmation in the form of a QR pass through Email or WhatsApp.
+              </p>
               <button 
                 onClick={() => setIsSubmitted(false)}
                 className="mt-4 px-8 py-4 bg-brand-primary text-white font-bold text-lg hover:bg-brand-primary/90 transition-colors uppercase tracking-widest text-sm"

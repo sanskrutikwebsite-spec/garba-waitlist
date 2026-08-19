@@ -32,13 +32,24 @@ export async function POST(request: Request) {
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID as string, serviceAccountAuth);
     await doc.loadInfo(); 
     const sheet = doc.sheetsByIndex[0];
+    await sheet.loadHeaderRow();
+    
+    // Auto-create SCANNED COUNT column if missing
+    if (!sheet.headerValues.includes('SCANNED COUNT')) {
+      await sheet.setHeaderRow([...sheet.headerValues, 'SCANNED COUNT']);
+    }
+    
     
     const rows = await sheet.getRows();
     
-    // Find the row with this specific secure Ticket ID
-    const targetRow = rows.find(r => r.get('TICKET ID') === ticketId);
+    // Find ALL rows with this specific secure Ticket ID, or by phone number, or by short ID
+    const targetRows = rows.filter(r => {
+      const tid = r.get('TICKET ID') || '';
+      const phone = r.get('PHONE') || r.get('PHONE NUMBER') || '';
+      return tid === ticketId || (ticketId.length >= 6 && tid.startsWith(ticketId)) || phone === ticketId;
+    });
 
-    if (!targetRow) {
+    if (targetRows.length === 0) {
       // Fake/Invalid ticket
       return NextResponse.json({ 
         valid: false, 
@@ -46,6 +57,28 @@ export async function POST(request: Request) {
         errorType: "INVALID"
       }, { status: 404 });
     }
+
+    if (targetRows.length > 1) {
+      // Return list of passes to let the volunteer choose
+      const tickets = targetRows.map(r => {
+        const totalPasses = parseInt(r.get('PASSES')) || 1;
+        const scannedCount = parseInt(r.get('SCANNED COUNT')) || 0;
+        return {
+          ticketId: r.get('TICKET ID'),
+          name: r.get('NAME'),
+          totalPasses,
+          remaining: totalPasses - scannedCount,
+          status: r.get('STATUS')
+        };
+      });
+      
+      return NextResponse.json({
+        multiple: true,
+        tickets
+      });
+    }
+
+    const targetRow = targetRows[0];
 
     const currentStatus = targetRow.get('STATUS');
 
@@ -69,17 +102,29 @@ export async function POST(request: Request) {
       }, { status: 403 });
     }
 
-    // It is valid and approved! Mark as scanned.
-    targetRow.assign({ 'STATUS': 'Scanned' });
-    await targetRow.save();
+    const totalPasses = parseInt(targetRow.get('PASSES')) || 1;
+    const scannedCount = parseInt(targetRow.get('SCANNED COUNT')) || 0;
+    const remaining = totalPasses - scannedCount;
 
-    console.log(`Ticket ${ticketId} successfully scanned for ${targetRow.get('NAME')}`);
+    if (remaining <= 0) {
+      return NextResponse.json({ 
+        valid: false, 
+        message: "ALREADY USED - NO PASSES REMAINING",
+        errorType: "USED",
+        name: targetRow.get('NAME')
+      }, { status: 409 });
+    }
+
+    console.log(`Ticket ${ticketId} verified for ${targetRow.get('NAME')}. Remaining: ${remaining}`);
 
     return NextResponse.json({ 
       valid: true, 
-      message: "ENTRY GRANTED",
+      message: "TICKET VERIFIED",
       name: targetRow.get('NAME'),
-      passes: targetRow.get('PASSES')
+      passes: totalPasses,
+      scannedCount: scannedCount,
+      remaining: remaining,
+      ticketId: targetRow.get('TICKET ID')
     });
 
   } catch (error) {

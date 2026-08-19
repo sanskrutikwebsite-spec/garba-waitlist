@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
-  const [qrModalData, setQrModalData] = useState<{name: string, data: string, phone: string, passes: string} | null>(null);
+  const [qrModalData, setQrModalData] = useState<{name: string, data: string, phone: string, passes: string, ticketId?: string} | null>(null);
   
   // Create Pass State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
         const data = await res.json();
         await fetchRegistrations();
         if (data.qrData) {
-          setQrModalData({ name: userName, data: data.qrData, phone: phone, passes: passes });
+          setQrModalData({ name: userName, data: data.qrData, phone: phone, passes: passes, ticketId: data.ticketId });
         }
       } else {
         alert("Failed to approve");
@@ -149,6 +149,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleResendEmail = async (id: number) => {
+    setProcessingId(id);
+    try {
+      const res = await fetch("/api/resend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rowId: id })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Email successfully resent!");
+      } else {
+        alert(data.error || "Failed to resend email");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error resending email");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const downloadQRCode = () => {
     const canvas = document.getElementById("qr-code-canvas") as HTMLCanvasElement;
     if (canvas) {
@@ -177,7 +199,7 @@ export default function AdminDashboard() {
         setShowCreateModal(false);
         setCreateFormData({ name: "", email: "", phone: "", passes: "1" });
         if (data.qrData) {
-          setQrModalData({ name: createFormData.name, data: data.qrData, phone: createFormData.phone, passes: createFormData.passes });
+          setQrModalData({ name: createFormData.name, data: data.qrData, phone: createFormData.phone, passes: createFormData.passes, ticketId: data.ticketId });
         }
       } else {
         alert("Failed to create pass");
@@ -411,6 +433,16 @@ export default function AdminDashboard() {
                             </div>
                             {reg.qrData && (
                               <div className="flex items-center gap-2 mt-1">
+                                {reg.email && reg.email !== 'Offline' && reg.email.includes('@') && (
+                                  <button
+                                    onClick={() => handleResendEmail(reg.id)}
+                                    disabled={processingId === reg.id}
+                                    className="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
+                                    title="Resend Pass via Email"
+                                  >
+                                    Email
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => handleRevoke(reg.id)}
                                   disabled={processingId === reg.id}
@@ -420,10 +452,10 @@ export default function AdminDashboard() {
                                   Revoke
                                 </button>
                                 <button
-                                  onClick={() => setQrModalData({ name: reg.name, data: reg.qrData as string, phone: reg.phone, passes: reg.passes })}
+                                  onClick={() => setQrModalData({ name: reg.name, data: reg.qrData as string, phone: reg.phone, passes: reg.passes, ticketId: reg.ticketId })}
                                   className="text-xs font-bold uppercase tracking-wider bg-black text-white px-3 py-1.5 rounded hover:bg-gray-800 transition-colors"
                                 >
-                                  View QR
+                                  View Pass
                                 </button>
                               </div>
                             )}
@@ -440,7 +472,7 @@ export default function AdminDashboard() {
 
       </div>
 
-      {/* QR Code Modal */}
+      {/* Success Modal */}
       {qrModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl p-8 max-w-sm w-full flex flex-col items-center relative shadow-2xl">
@@ -453,39 +485,39 @@ export default function AdminDashboard() {
             
             <h3 className="text-2xl font-black text-green-600 mb-1">Approved!</h3>
             <p className="text-sm font-medium text-gray-600 mb-6 text-center">
-              Ticket generated for <span className="text-black font-bold">{qrModalData.name}</span>
+              Pass generated for <span className="text-black font-bold">{qrModalData.name}</span>
             </p>
             
-            <div className="bg-white p-4 border-2 border-gray-100 rounded-xl shadow-inner mb-6">
-              <QRCodeCanvas
-                id="qr-code-canvas"
-                value={qrModalData.data} 
-                size={220}
-                level="H"
-                includeMargin={true}
-              />
-            </div>
-            
-            <p className="text-sm font-bold text-gray-500 mb-4 text-center">
-              Click the button below to download the QR code image and share it via WhatsApp.
+            <p className="text-sm font-bold text-gray-500 mb-6 text-center">
+              An automated email with the digital pass has been sent if they provided a valid email address.
             </p>
             
             <div className="flex flex-col gap-3 w-full">
-              <button 
-                onClick={downloadQRCode}
-                className="w-full bg-brand-primary text-white font-bold py-4 rounded-xl hover:bg-brand-primary/90 transition-colors flex items-center justify-center gap-2"
-              >
-                <Download size={20} /> Download QR Code
-              </button>
+              {qrModalData.ticketId && (
+                <button 
+                  onClick={() => {
+                    window.open(`/pass/${qrModalData.ticketId}`, '_blank');
+                  }}
+                  className="w-full bg-brand-primary text-white font-bold py-4 rounded-xl hover:bg-brand-primary/90 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ExternalLink size={20} /> View Digital Pass
+                </button>
+              )}
+              
               <button 
                 onClick={() => {
-                  const message = encodeURIComponent(`Hi ${qrModalData.name},\n\nYour payment is approved! Here is your Garba pass for ${qrModalData.passes} people.\n\nPlease show the attached QR code at the entrance.`);
+                  let message = "";
+                  if (qrModalData.ticketId) {
+                    message = encodeURIComponent(`Hi ${qrModalData.name},\n\nYour payment is approved! Here is the link to your official Garba pass for ${qrModalData.passes} people:\n\n${window.location.origin}/pass/${qrModalData.ticketId}\n\nPlease show the QR code on your pass at the entrance.`);
+                  } else {
+                    message = encodeURIComponent(`Hi ${qrModalData.name},\n\nYour payment is approved! Here is your Garba pass for ${qrModalData.passes} people.\n\nPlease show your QR code at the entrance.`);
+                  }
                   const cleanPhone = qrModalData.phone.replace(/\D/g, '');
                   window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
                 }}
                 className="w-full bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#128C7E] transition-colors flex items-center justify-center gap-2"
               >
-                Send via WhatsApp
+                Share via WhatsApp
               </button>
               <button 
                 onClick={() => setQrModalData(null)}

@@ -3,6 +3,7 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 import { v4 as uuidv4 } from "uuid";
 import { SignJWT } from "jose";
+import { sendPassEmail } from "@/lib/sendEmail";
 
 export async function POST(request: Request) {
   try {
@@ -45,6 +46,11 @@ export async function POST(request: Request) {
       'DATE': new Date().toISOString(),
       'TICKET ID': ticketId
     });
+
+    if (email && email.includes('@')) {
+      const origin = request.headers.get("origin") || new URL(request.url).origin;
+      await sendPassEmail(email, name, passes, ticketId, origin);
+    }
 
     console.log(`Successfully created offline pass for ${name}. Ticket ID: ${ticketId}`);
 

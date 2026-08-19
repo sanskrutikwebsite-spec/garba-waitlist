@@ -3,6 +3,8 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 import { v4 as uuidv4 } from "uuid";
 import { SignJWT } from "jose";
+import { sendPassEmail } from "@/lib/sendEmail";
+
 export async function POST(request: Request) {
   try {
     const { rowId } = await request.json();
@@ -45,6 +47,13 @@ export async function POST(request: Request) {
     // Update row
     targetRow.assign({ 'STATUS': 'Approved', 'TICKET ID': ticketId });
     await targetRow.save(); // Save changes back to Google Sheets
+
+    // Send automated email if email exists and is valid
+    const email = targetRow.get('EMAIL');
+    if (email && email !== 'Offline' && email.includes('@')) {
+      const origin = request.headers.get("origin") || new URL(request.url).origin;
+      await sendPassEmail(email, targetRow.get('NAME'), targetRow.get('PASSES'), ticketId, origin);
+    }
 
     console.log(`Successfully approved row ${rowId}. Ticket ID: ${ticketId}`);
 

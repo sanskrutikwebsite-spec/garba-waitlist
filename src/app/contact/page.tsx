@@ -73,7 +73,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-center gap-4 bg-white/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/50 shadow-sm">
               <span className="text-brand-primary">📞</span>
-              <span className="font-bold">+91 7202-011111</span>
+              <span className="font-bold">+91 7600044100</span>
             </div>
           </div>
         </motion.div>
