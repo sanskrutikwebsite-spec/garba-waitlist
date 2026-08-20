@@ -83,9 +83,9 @@ export default function CheckoutPage() {
           {isSubmitted ? (
             <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
               <h3 className="text-xl font-bold text-brand-primary uppercase">Thank you for the incredible love and interest you have shown</h3>
-              <h3 className="text-3xl font-bold text-brand-primary uppercase mt-2">Registration Pending!</h3>
+              <h3 className="text-3xl font-bold text-brand-primary uppercase mt-2">Registration Successful!</h3>
               <p className="text-lg font-medium text-foreground/80 mt-4 uppercase">
-                Once your booking and payment are successful, you will receive a confirmation in the form of a QR pass through Email or WhatsApp.
+                We will let you know the approval in 24 - 48 hrs through email or WhatsApp.
               </p>
               <button 
                 onClick={() => setIsSubmitted(false)}

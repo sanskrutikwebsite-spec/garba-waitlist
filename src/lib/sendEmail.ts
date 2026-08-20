@@ -1,14 +1,15 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
 export const sendPassEmail = async (to: string, name: string, passes: string, ticketId: string, origin: string) => {
+  console.log("sendPassEmail called for:", to, "with user:", process.env.EMAIL_USER);
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
   const passUrl = `${origin}/pass/${ticketId}`;
 
   const html = `
