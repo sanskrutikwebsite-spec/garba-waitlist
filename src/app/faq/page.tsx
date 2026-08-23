@@ -5,22 +5,29 @@ import { useState } from "react";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+  },
 };
 
 const faqs = [
   {
     question: "When and where is the event taking place?",
-    answer: "The dates and exact venue are currently being finalized. By joining the waitlist, you'll be the first to know as soon as the official announcement is made."
+    answer:
+      "The dates and exact venue are currently being finalized. Follow our updates and announcements to hear the confirmed details as soon as they are published.",
   },
   {
     question: "Is there a dress code?",
-    answer: "Yes, to honor the cultural significance of the event, traditional Navratri attire (Chaniya Choli for women, Kurta for men) is highly encouraged."
+    answer:
+      "Yes, to honor the cultural significance of the event, traditional Navratri attire (Chaniya Choli for women, Kurta for men) is highly encouraged.",
   },
   {
     question: "Are children allowed?",
-    answer: "Absolutely! Sanskrutik Sheri Garba is a family-friendly event. Children of all ages are welcome to join in the celebrations."
-  }
+    answer:
+      "Absolutely! Sanskrutik Sheri Garba is a family-friendly event. Children of all ages are welcome to join in the celebrations.",
+  },
 ];
 
 export default function FAQPage() {
@@ -28,21 +35,29 @@ export default function FAQPage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-[#fcfaf5] text-foreground relative py-24 lg:py-32 px-6">
-
       {/* Background */}
       <div className="absolute inset-0 z-0 fixed pointer-events-none bg-[#EAD7B7]">
         <div className="block md:hidden absolute inset-0">
-          <img src="/bg-vertical.jpg" alt="Background" className="w-full h-full object-cover opacity-100" />
+          <img
+            src="/bg-vertical.jpg"
+            alt="Background"
+            className="w-full h-full object-cover opacity-100"
+          />
         </div>
         <div className="hidden md:block absolute inset-0">
-          <img src="/bg-horizontal.jpg" alt="Background" className="w-full h-full object-cover opacity-100" />
+          <img
+            src="/bg-horizontal.jpg"
+            alt="Background"
+            className="w-full h-full object-cover opacity-100"
+          />
         </div>
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto w-full flex flex-col items-center">
-
         <motion.div
-          initial="hidden" animate="visible" variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
           className="text-center mb-16"
         >
           <h1 className="text-5xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-tight drop-shadow-sm mb-4">
@@ -62,7 +77,9 @@ export default function FAQPage() {
               onClick={() => setOpenIndex(openIndex === index ? null : index)}
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-xl lg:text-2xl font-bold text-foreground">{faq.question}</h3>
+                <h3 className="text-xl lg:text-2xl font-bold text-foreground">
+                  {faq.question}
+                </h3>
                 <span className="text-brand-primary text-2xl ml-4 font-extrabold">
                   {openIndex === index ? "−" : "+"}
                 </span>
@@ -82,7 +99,6 @@ export default function FAQPage() {
             </motion.div>
           ))}
         </div>
-
       </div>
     </main>
   );
