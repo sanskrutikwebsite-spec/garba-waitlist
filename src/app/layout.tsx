@@ -6,17 +6,17 @@ import "./globals.css";
 const berlinSans = localFont({
   src: [
     {
-      path: "./fonts/BRLNSR.ttf",
-      weight: "400",
-      style: "normal",
-    },
+      path: './fonts/BRLNSR.ttf',
+      weight: '400',
+      style: 'normal',
+    }
   ],
   variable: "--font-berlin-sans",
 });
 
 export const metadata: Metadata = {
-  title: "Navratri Garba",
-  description: "Join the most awaited Navratri Garba event.",
+  title: "Navratri Garba - Join the Waitlist",
+  description: "Join the waitlist for the most awaited Navratri Garba event. Coming soon!",
 };
 
 export default function RootLayout({
@@ -25,9 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html
+      lang="en"
+      className="h-full antialiased"
+    >
       <body className={`min-h-full flex flex-col ${berlinSans.className}`}>
-        <div className="flex-1">{children}</div>
+        <div className="flex-1">
+          {children}
+        </div>
         <Footer />
       </body>
     </html>

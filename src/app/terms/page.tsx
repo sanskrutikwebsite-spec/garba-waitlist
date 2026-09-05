@@ -7,7 +7,7 @@ const fadeUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
 };
 
-export default function PrivacyPage() {
+export default function TermsPage() {
   return (
     <main className="flex flex-col min-h-screen bg-[#fcfaf5] text-foreground relative py-24 lg:py-32 px-6">
       
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           className="text-center mb-12"
         >
           <h1 className="text-5xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-tight drop-shadow-sm mb-4">
-            Privacy <span className="text-brand-primary italic">Policy</span>
+            Terms & <span className="text-brand-primary italic">Conditions</span>
           </h1>
         </motion.div>
 
@@ -37,25 +37,19 @@ export default function PrivacyPage() {
           className="w-full bg-white/30 backdrop-blur-xl border border-white/40 p-8 lg:p-12 rounded-[2rem] shadow-2xl relative overflow-hidden"
         >
           <div className="prose prose-lg text-foreground/90 max-w-none">
-            <h2 className="text-2xl font-bold text-foreground mb-4">1. Information We Collect</h2>
-            <p className="mb-6 font-semibold">
-              When you join our waitlist or use our Connect forms, we collect the personal information you give us such as your name, address, and email address.
-            </p>
-
-            <h2 className="text-2xl font-bold text-foreground mb-4">2. How Do You Get My Consent?</h2>
-            <p className="mb-6 font-semibold">
-              When you provide us with personal information to complete a transaction, verify your credit card, place an order, arrange for a delivery or return a purchase, we imply that you consent to our collecting it and using it for that specific reason only.
-            </p>
-
-            <h2 className="text-2xl font-bold text-foreground mb-4">3. Disclosure</h2>
-            <p className="mb-6 font-semibold">
-              We may disclose your personal information if we are required by law to do so or if you violate our Terms of Service.
-            </p>
-
-            <h2 className="text-2xl font-bold text-foreground mb-4">4. Third-Party Services</h2>
-            <p className="mb-6 font-semibold">
-              In general, the third-party providers used by us will only collect, use and disclose your information to the extent necessary to allow them to perform the services they provide to us.
-            </p>
+            <ul className="list-disc pl-6 space-y-4 font-semibold text-foreground/80">
+              <li>Entry is allowed with only a valid pass. Any lost or scanned pass will not be replaced.</li>
+              <li>No refunds or cancellations unless announced by the organisers.</li>
+              <li>Admission rights are reserved by the organisers alone. Event is subjected to Ahmedabad jurisdiction.</li>
+              <li>The organisers hold power to close the entry at any given point of time without any prior notice.</li>
+              <li>Strictly no alcohol, smoking, vaping, drugs or other prohibited items allowed at the event venue.</li>
+              <li>Outside food and beverages, weapons or inflammables are not allowed.</li>
+              <li>Attendees are subjected to security checks.</li>
+              <li>Any misbehaviour during the event may lead to removal.</li>
+              <li>Organisers are not responsible for any loss, theft, injury or medical emergencies.</li>
+              <li>Attendees must follow all safety guidelines and instructions from event staff at all time.</li>
+              <li>Respect fellow attendees, performers and event staff. No misconduct will be tolerated.</li>
+            </ul>
           </div>
         </motion.div>
 

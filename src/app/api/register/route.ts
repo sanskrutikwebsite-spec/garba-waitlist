@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     const phone = formData.get("phone") as string;
     const passes = formData.get("passes") as string;
     const screenshot = formData.get("screenshot") as File;
+    const referralCode = (formData.get("referralCode") as string) || "";
 
     if (!name || !email || !phone || !passes || !screenshot) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -74,7 +75,8 @@ export async function POST(request: Request) {
       'SCREENTSHOT': screenshotUrl,
       'STATUS': 'Pending',
       'DATE': new Date().toISOString(),
-      'TICKET ID': 'TBD'
+      'TICKET ID': 'TBD',
+      'REFERRAL CODE': referralCode
     });
 
     console.log("New Registration saved to Google Sheets:", { name, email, phone, passes });

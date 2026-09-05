@@ -1,7 +1,7 @@
 "use client";
 
 import { QRCodeCanvas } from "qrcode.react";
-import { Download } from "lucide-react";
+import { Download, Share2 } from "lucide-react";
 import { useRef } from "react";
 import * as htmlToImage from "html-to-image";
 
@@ -19,13 +19,60 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
     if (!passRef.current) return;
     try {
       const dataUrl = await htmlToImage.toPng(passRef.current, { pixelRatio: 2 });
+      const filename = `Garba_Pass_${name.replace(/\\s+/g, '_')}.png`;
+
+      // Try Web Share API first (best for mobile)
+      if (navigator.canShare) {
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'Garba Pass',
+              files: [file]
+            });
+            return; // Successfully shared/saved
+          }
+        } catch (shareErr) {
+          console.error("Web share failed or cancelled", shareErr);
+          // Fall through to regular download
+        }
+      }
+
+      // Standard download fallback
       const link = document.createElement('a');
-      link.download = `Garba_Pass_${name.replace(/\\s+/g, '_')}.png`;
+      link.download = filename;
       link.href = dataUrl;
+      document.body.appendChild(link); // Required for some browsers (e.g., Firefox)
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
       console.error("Failed to download pass", err);
       alert("Failed to download pass. Please screenshot instead.");
+    }
+  };
+
+  const sharePassLink = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Sanskrutik Garba Pass',
+          text: `Here is the Garba Pass for ${name}`,
+          url: url,
+        });
+      } catch (err) {
+        console.error("Error sharing link", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert("Pass link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy", err);
+        alert("Failed to copy link.");
+      }
     }
   };
 
@@ -74,14 +121,23 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
         </div>
       </div>
 
-      {/* Download Button (Not part of the screenshot) */}
-      <button 
-        onClick={downloadPass}
-        className="w-full bg-[#E3C57F] text-black font-bold uppercase tracking-widest py-4 rounded-2xl hover:bg-[#cda434] transition-colors flex justify-center items-center gap-2 shadow-lg"
-      >
-        <Download size={20} />
-        Save Pass as Image
-      </button>
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 w-full">
+        <button 
+          onClick={downloadPass}
+          className="flex-1 bg-[#E3C57F] text-black font-bold uppercase tracking-widest py-4 px-2 rounded-2xl hover:bg-[#cda434] transition-colors flex justify-center items-center gap-2 shadow-lg text-sm sm:text-base"
+        >
+          <Download size={20} />
+          Save Image
+        </button>
+        <button 
+          onClick={sharePassLink}
+          className="flex-1 bg-white/10 text-white border border-white/20 font-bold uppercase tracking-widest py-4 px-2 rounded-2xl hover:bg-white/20 transition-colors flex justify-center items-center gap-2 shadow-lg text-sm sm:text-base"
+        >
+          <Share2 size={20} />
+          Share Link
+        </button>
+      </div>
     </div>
   );
 }

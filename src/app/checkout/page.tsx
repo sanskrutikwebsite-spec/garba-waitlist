@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
+import { VALID_REFERRAL_CODES } from "@/lib/referralCodes";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -23,6 +24,10 @@ export default function CheckoutPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(false);
   const [isEarlyBird, setIsEarlyBird] = useState(true);
+  const [referralCode, setReferralCode] = useState("");
+
+  const isReferralValid = VALID_REFERRAL_CODES.includes(referralCode.trim().toUpperCase());
+  const currentPrice = isEarlyBird || isReferralValid ? 2700 : 3000;
 
   useEffect(() => {
     // Cutoff: 72 hrs from tomorrow (assuming tomorrow is Aug 19 -> Aug 22 00:00)
@@ -66,11 +71,8 @@ export default function CheckoutPage() {
             Secure your spot by filling out the details below and uploading your payment screenshot.
             <br />
             <span className="font-bold text-brand-primary">
-              {isEarlyBird ? "Early Bird Price: ₹2700 per pass" : "Price: ₹3000 per pass"}
+              {currentPrice === 2700 ? "Discounted Price: ₹2700 per pass" : "Price: ₹3000 per pass"}
             </span>
-          </p>
-          <p className="text-sm mt-4 font-bold text-foreground/60">
-            Having trouble? <Link href="/help" className="text-brand-primary hover:underline">Visit our Help Center</Link>
           </p>
         </div>
 
@@ -170,6 +172,32 @@ export default function CheckoutPage() {
                 </motion.div>
               </div>
 
+              <div className="w-full">
+                <motion.div variants={fadeUp} className="relative group">
+                  <input
+                    type="text"
+                    id="referralCode"
+                    name="referralCode"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    className="peer w-full bg-transparent border-b border-foreground/30 py-4 text-foreground text-lg focus:outline-none focus:border-[#E3C57F] transition-colors placeholder-transparent uppercase"
+                    placeholder="Referral Code (Optional)"
+                  />
+                  <label
+                    htmlFor="referralCode"
+                    className="absolute left-0 top-0 text-foreground/90 text-xs font-bold uppercase tracking-[0.2em] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-0 peer-focus:text-xs peer-focus:text-brand-primary"
+                  >
+                    Referral Code (Optional)
+                  </label>
+                  {referralCode && isReferralValid && (
+                    <p className="text-green-600 text-xs mt-2 font-bold uppercase tracking-widest">Valid code! 10% discount applied.</p>
+                  )}
+                  {referralCode && !isReferralValid && (
+                    <p className="text-red-500 text-xs mt-2 font-bold uppercase tracking-widest">Invalid code.</p>
+                  )}
+                </motion.div>
+              </div>
+
               {/* Payment Section */}
               <motion.div variants={fadeUp} className="bg-zinc-50 border border-zinc-200 p-8 mt-6">
                 <h3 className="text-xl font-bold text-brand-primary mb-4">Payment Information</h3>
@@ -184,7 +212,7 @@ export default function CheckoutPage() {
                   
                   <div className="w-full md:w-1/2 flex flex-col gap-6">
                     <p className="text-sm text-foreground/80 leading-relaxed">
-                      Please make the payment for your passes using the QR code (<span className="font-bold text-brand-primary">{isEarlyBird ? "₹2700 per pass" : "₹3000 per pass"}</span>). After successful payment, upload the screenshot here.
+                      Please make the payment for your passes using the QR code (<span className="font-bold text-brand-primary">₹{currentPrice} per pass</span>). After successful payment, upload the screenshot here.
                     </p>
                     <div className="relative group mt-4">
                       <input
@@ -213,6 +241,11 @@ export default function CheckoutPage() {
             </form>
           )}
         </motion.div>
+        <div className="mt-8 text-center">
+          <p className="text-sm font-bold text-foreground/60">
+            Having trouble? <Link href="/help" className="text-brand-primary hover:underline">Visit our Help Center</Link>
+          </p>
+        </div>
       </div>
     </main>
   );
