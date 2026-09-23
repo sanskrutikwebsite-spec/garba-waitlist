@@ -21,12 +21,18 @@ const staggerContainer = {
 
 export default function Home() {
   const [isEarlyBird, setIsEarlyBird] = useState(true);
+  const [isArtistRevealed, setIsArtistRevealed] = useState(false);
 
   useEffect(() => {
     // Cutoff: 72 hrs from tomorrow (assuming tomorrow is Aug 19 -> Aug 22 00:00)
     const cutoff = new Date("2026-08-22T00:00:00+05:30");
     if (new Date() >= cutoff) {
       setIsEarlyBird(false);
+    }
+    
+    const revealDate = new Date("2026-09-24T00:00:00+05:30");
+    if (new Date() >= revealDate) {
+      setIsArtistRevealed(true);
     }
   }, []);
 
@@ -102,70 +108,140 @@ export default function Home() {
         </div>
       </section>
 
+      {/* --- ARTIST REVEAL SECTION --- */}
+      {isArtistRevealed && (
+        <section className="relative z-10 w-full py-16 px-6 overflow-hidden bg-brand-primary/5">
+          <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
+            <h3 className="text-3xl font-extrabold text-foreground uppercase tracking-widest border-b-2 border-brand-primary pb-2 mb-10">Featured Artist</h3>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              whileInView={{ opacity: 1, scale: 1 }} 
+              viewport={{ once: true }}
+              className="flex flex-col items-center gap-6"
+            >
+              <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden shadow-2xl border-4 border-brand-primary/30">
+                <Image src="/artist.JPG" alt="Mihir Jani" fill className="object-cover object-top" />
+              </div>
+              <div className="text-center">
+                <h4 className="text-4xl md:text-5xl font-extrabold text-brand-primary tracking-tight">Mihir Jani</h4>
+                <p className="text-xl text-foreground/80 font-bold tracking-widest uppercase mt-4">11th October</p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* --- 3. EVENT GALLERY MARQUEE --- */}
       <section className="relative z-10 w-full overflow-hidden py-12 pointer-events-none">
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }}
-          className="relative flex w-full max-w-[100vw] overflow-hidden"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, duration: 600, ease: "linear" }}
+          className="flex gap-6 w-max"
         >
-          <div className="flex w-max animate-[marquee_120s_linear_infinite] gap-4 sm:gap-6 px-2 sm:px-3">
-            {[
-              "1090 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0120 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0712 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1662 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0092 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0985 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1095 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0493 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1600 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0730 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0604 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1119 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0113 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0939 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1595 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1216 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0709 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0455 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1133 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1217 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0710 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1090 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0120 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0712 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1662 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0092 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0985 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1095 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0493 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1600 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0730 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0604 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1119 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0113 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0939 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1595 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1216 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0709 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0455 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1133 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "1217 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg",
-              "0710 DS Sanskrutik Sheri Garba 4 0 on 22-09-2025.jpg"
-            ].map((filename, i) => (
-              <div key={i} className="relative w-[280px] h-[180px] sm:w-[400px] sm:h-[260px] rounded-[2rem] overflow-hidden shadow-2xl border border-white/30 shrink-0">
-                <Image
-                  src={`/${filename}`}
-                  alt={`Event Highlight ${i}`}
-                  fill
-                  sizes="(max-width: 640px) 280px, 400px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-brand-primary/10 mix-blend-multiply"></div>
-              </div>
-            ))}
-          </div>
+          {[
+            "image1.jpg", "image2.jpg", "image3.jpg", "image4.jpg", "image5.jpg", "image6.jpg",
+            "image7.jpg", "image8.jpg", "image9.jpg", "image10.jpg", "image11.jpg", "image12.jpg",
+            "image13.jpg", "image14.jpg", "image15.jpg", "image16.jpg", "image17.jpg", "image18.jpg",
+            "image19.jpg", "image20.jpg", "image21.jpg", "image22.jpg",
+            "image1.jpg", "image2.jpg", "image3.jpg", "image4.jpg", "image5.jpg", "image6.jpg",
+            "image7.jpg", "image8.jpg", "image9.jpg", "image10.jpg", "image11.jpg", "image12.jpg",
+            "image13.jpg", "image14.jpg", "image15.jpg", "image16.jpg", "image17.jpg", "image18.jpg",
+            "image19.jpg", "image20.jpg", "image21.jpg", "image22.jpg"
+          ].map((filename, i) => (
+            <div key={i} className="relative w-[280px] h-[180px] sm:w-[400px] sm:h-[260px] rounded-[2rem] overflow-hidden shadow-2xl border border-white/30 shrink-0">
+              <Image
+                src={`/${filename}`}
+                alt={`Event Highlight ${i}`}
+                fill
+                sizes="(max-width: 640px) 280px, 400px"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-brand-primary/10 mix-blend-multiply"></div>
+            </div>
+          ))}
         </motion.div>
+      </section>
+
+      {/* --- NEW SECTION: VENUE & PARTNERS --- */}
+      <section className="relative z-10 w-full py-20 px-6 lg:px-24 bg-[#fcfaf5]/80 backdrop-blur-sm border-t border-foreground/5">
+        <div className="max-w-6xl mx-auto flex flex-col gap-20">
+          
+          {/* Venue Info */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col items-center text-center gap-4"
+          >
+            <h3 className="text-3xl font-extrabold text-brand-primary uppercase tracking-widest">Venue</h3>
+            <p className="text-xl text-foreground font-medium max-w-2xl">
+              Hrishimani Party Plot, nr. Nirma University, Vaishnodevi, Ahmedabad – 382470
+            </p>
+            <a 
+              href="https://maps.app.goo.gl/Ksa9RJnFDBAoHG6j7?g_st=ic" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="mt-2 text-brand-primary border-b border-brand-primary pb-1 font-bold hover:text-brand-primary/80 transition-colors uppercase tracking-wider text-sm"
+            >
+              View on Google Maps
+            </a>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+            {/* Sponsors */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center md:items-start gap-6 w-full"
+            >
+              <h3 className="text-2xl font-extrabold text-foreground uppercase tracking-widest border-b-2 border-brand-primary pb-2 inline-block">Our Sponsors</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/riva.png" alt="Riva Diamonds" fill sizes="200px" className="object-contain p-2" />
+                </div>
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/silverfemmes.jpeg" alt="Silver Femmes" fill sizes="200px" className="object-contain p-2" />
+                </div>
+                <div className="bg-zinc-900 p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/ASSAR logo-white.png" alt="Assar Digisol" fill sizes="200px" className="object-contain p-4" />
+                </div>
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/dholakia.png" alt="Dholakia Studio" fill sizes="200px" className="object-contain p-2" />
+                </div>
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/nempanth (1).png" alt="Nempanthh" fill sizes="200px" className="object-contain p-2" />
+                </div>
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/zeel.jpeg" alt="Zeel Tours & Immigration" fill sizes="200px" className="object-contain p-2" />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Ticket Partners */}
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center md:items-start gap-6 w-full"
+            >
+              <h3 className="text-2xl font-extrabold text-foreground uppercase tracking-widest border-b-2 border-brand-primary pb-2 inline-block">Ticket Partners</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/MONSOON MANSION LOGO.png" alt="Monsoon" fill sizes="200px" className="object-contain p-2" />
+                </div>
+                <div className="bg-zinc-900 p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/roastery old white.png" alt="Roastery Culture" fill sizes="200px" className="object-contain p-2" />
+                </div>
+                <div className="bg-white p-4 shadow-sm border border-foreground/5 rounded-md flex items-center justify-center h-24 relative">
+                  <Image src="/teataprri.png" alt="Tea Tappri" fill sizes="200px" className="object-contain p-2" />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+        </div>
       </section>
 
       {/* --- 4. SLEEK CALL TO ACTION --- */}

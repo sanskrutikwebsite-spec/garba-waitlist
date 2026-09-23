@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useTransform, Variants } from "framer-motion";
 import { useRef } from "react";
+import Image from "next/image";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -64,8 +65,14 @@ export default function AboutPage() {
             <h2 className="text-4xl lg:text-5xl font-black mb-12 text-foreground tracking-tight">A Return to Roots</h2>
 
             <div className="text-xl lg:text-2xl leading-relaxed text-foreground/80 font-medium flex flex-col gap-10">
-              <p>
-                Founded in <span className="font-bold text-foreground">2022</span> by Dailisay Events LLP, Sanskrutik Sheri Garba was born out of a profound desire to preserve the authentic, deeply spiritual essence of Navratri.
+              <p className="flex items-center justify-center flex-wrap gap-3">
+                Founded in <span className="font-bold text-foreground">2022</span> by 
+                <span className="inline-flex items-center gap-2 bg-white px-3 py-1 rounded border border-brand-primary/20 shadow-sm font-bold text-foreground">
+                  <span className="relative w-6 h-6">
+                    <Image src="/dalisay events.jpeg" alt="Dalisay Events" fill sizes="24px" className="object-contain rounded" />
+                  </span>
+                  Dalisay Events LLP
+                </span>, Sanskrutik Sheri Garba was born out of a profound desire to preserve the authentic, deeply spiritual essence of Navratri.
               </p>
 
               <p>

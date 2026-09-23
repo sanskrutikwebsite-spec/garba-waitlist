@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
-import Script from "next/script";
-import { VALID_REFERRAL_CODES } from "@/lib/referralCodes";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -20,17 +19,22 @@ const staggerContainer = {
   }
 };
 
-export default function CheckoutPage() {
+const PARTNERS: Record<string, { name: string; code: string }> = {
+  "roastery-culture": { name: "Roastery Culture", code: "RC2026" },
+  "monsoon": { name: "Monsoon", code: "Monsoon26" },
+  "tea-tappri": { name: "Tea Tappri", code: "TeaTappri26" }
+};
+
+export default function PartnerPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(false);
   const [phase, setPhase] = useState(1);
-  const [referralCode, setReferralCode] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("upi");
 
-  const isReferralValid = VALID_REFERRAL_CODES.some(
-    (code) => code.toUpperCase() === referralCode.trim().toUpperCase()
-  );
+  const partnerId = resolvedParams.id.toLowerCase();
+  const partner = PARTNERS[partnerId];
 
   useEffect(() => {
     const now = new Date();
@@ -49,6 +53,14 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  if (!partner) {
+    return (
+      <main className="min-h-screen bg-[#fcfaf5] text-foreground font-sans py-24 px-6 md:px-12 flex justify-center items-center">
+        <h1 className="text-3xl font-bold">Partner not found.</h1>
+      </main>
+    );
+  }
+
   const getBasePrice = () => {
     if (phase === 3) return 4000;
     if (phase === 2) return 3500;
@@ -57,7 +69,8 @@ export default function CheckoutPage() {
   };
 
   const basePrice = getBasePrice();
-  const currentPrice = isReferralValid ? Math.round(basePrice * 0.9) : basePrice;
+  // Mathematical 10% discount
+  const currentPrice = Math.round(basePrice * 0.9);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,12 +79,13 @@ export default function CheckoutPage() {
 
     const formData = new FormData(e.currentTarget);
     formData.append("paymentMethod", paymentMethod);
+    formData.append("referralCode", partner.code); // inject code automatically
     
     if (paymentMethod === "cash") {
       const name = formData.get("name") as string;
       const passes = formData.get("passes") as string;
       const total = parseInt(passes) * currentPrice;
-      const message = `Hello, I would like to book Garba passes.\n\nName: ${name}\nPasses: ${passes}\nPayment Method: Cash\nTotal Amount: ₹${total}\n\nPlease confirm my booking.`;
+      const message = `Hello, I am booking Garba passes via ${partner.name}.\n\nName: ${name}\nPasses: ${passes}\nPromo Code: ${partner.code}\nPayment Method: Cash\nTotal Amount: ₹${total}\n\nPlease confirm my booking.`;
       
       window.location.href = `https://wa.me/917600044100?text=${encodeURIComponent(message)}`;
       setIsSubmitting(false);
@@ -99,14 +113,17 @@ export default function CheckoutPage() {
     <main className="min-h-screen bg-[#fcfaf5] text-foreground font-sans py-24 px-6 md:px-12 flex justify-center items-center">
       <div className="max-w-4xl w-full">
         <div className="mb-12 text-center">
+          <p className="text-sm font-bold tracking-[0.2em] uppercase text-brand-primary mb-4">
+            Special Partner Offer
+          </p>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-            Complete Your <span className="text-brand-primary italic">Purchase</span>
+            Welcome, <span className="text-brand-primary italic">{partner.name}</span> Customers!
           </h1>
-          <p className="text-foreground/80 mt-4 text-lg">
-            Secure your spot by filling out the details below and uploading your payment screenshot.
+          <p className="text-foreground/80 mt-6 text-lg">
+            Secure your spot by filling out the details below. Your special 10% discount is already applied!
             <br />
-            <span className="font-bold text-brand-primary">
-              {isReferralValid ? `Discounted Price: ₹${currentPrice} per pass` : `Price: ₹${currentPrice} per pass`}
+            <span className="font-bold text-brand-primary inline-block mt-2">
+              Discounted Price: ₹{currentPrice} per pass <span className="line-through text-foreground/40 text-sm ml-2">₹{basePrice}</span>
             </span>
           </p>
         </div>
@@ -119,7 +136,7 @@ export default function CheckoutPage() {
         >
           {isSubmitted ? (
             <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
-              <h3 className="text-xl font-bold text-brand-primary uppercase">Thank you for the incredible love and interest you have shown</h3>
+              <h3 className="text-xl font-bold text-brand-primary uppercase">Thank you for the incredible love and interest</h3>
               <h3 className="text-3xl font-bold text-brand-primary uppercase mt-2">Registration Successful!</h3>
               <p className="text-lg font-medium text-foreground/80 mt-4 uppercase">
                 We will let you know the approval in 24 - 48 hrs through email or WhatsApp.
@@ -130,7 +147,7 @@ export default function CheckoutPage() {
               >
                 Register another person
               </button>
-              <Script id="fb-pixel" strategy="afterInteractive">
+              <Script id="fb-pixel-partner" strategy="afterInteractive">
                 {`
                   !function(f,b,e,v,n,t,s)
                   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -225,28 +242,14 @@ export default function CheckoutPage() {
               </div>
 
               <div className="w-full">
-                <motion.div variants={fadeUp} className="relative group">
-                  <input
-                    type="text"
-                    id="referralCode"
-                    name="referralCode"
-                    value={referralCode}
-                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                    className="peer w-full bg-transparent border-b border-foreground/30 py-4 text-foreground text-lg focus:outline-none focus:border-[#E3C57F] transition-colors placeholder-transparent uppercase"
-                    placeholder="Referral Code (Optional)"
-                  />
-                  <label
-                    htmlFor="referralCode"
-                    className="absolute left-0 top-0 text-foreground/90 text-xs font-bold uppercase tracking-[0.2em] transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:top-0 peer-focus:text-xs peer-focus:text-brand-primary"
-                  >
-                    Referral Code (Optional)
-                  </label>
-                  {referralCode && isReferralValid && (
-                    <p className="text-green-600 text-xs mt-2 font-bold uppercase tracking-widest">Valid code! 10% discount applied.</p>
-                  )}
-                  {referralCode && !isReferralValid && (
-                    <p className="text-red-500 text-xs mt-2 font-bold uppercase tracking-widest">Invalid code.</p>
-                  )}
+                <motion.div variants={fadeUp} className="relative group p-4 border border-brand-primary/30 bg-brand-primary/5 rounded-md flex items-center justify-between">
+                   <div>
+                     <p className="text-xs font-bold uppercase tracking-widest text-foreground/60">Promo Code Applied</p>
+                     <p className="text-xl font-extrabold text-brand-primary tracking-widest uppercase mt-1">{partner.code}</p>
+                   </div>
+                   <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                   </div>
                 </motion.div>
               </div>
 
