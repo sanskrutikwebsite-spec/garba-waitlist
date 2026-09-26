@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           <div className="prose prose-lg text-foreground/90 max-w-none">
             <h2 className="text-2xl font-bold text-foreground mb-4">1. Information We Collect</h2>
             <p className="mb-6 font-semibold">
-              When you book passes or use our Connect forms, we collect the personal information you give us such as your name, address, and email address.
+              When you join our waitlist or use our Connect forms, we collect the personal information you give us such as your name, address, and email address.
             </p>
 
             <h2 className="text-2xl font-bold text-foreground mb-4">2. How Do You Get My Consent?</h2>

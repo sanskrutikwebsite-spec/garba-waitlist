@@ -67,8 +67,8 @@ export default function Footer() {
         <p>© {new Date().getFullYear()} Sanskrutik Sheri Garba. All rights reserved.</p>
         <div className="flex items-center gap-3">
           <span>Events Managed By</span>
-          <div className="relative w-28 h-8">
-            <Image src="/dalisay events.jpeg" alt="Dalisay Events LLP" fill sizes="112px" className="object-contain rounded" />
+          <div className="relative w-40 h-12">
+            <Image src="/Dalisay Final Logo.png" alt="Dalisay Events LLP" fill sizes="160px" className="object-contain rounded" />
           </div>
         </div>
       </div>
