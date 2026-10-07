@@ -33,22 +33,39 @@ async function getTicketData(ticketId: string) {
 }
 
 export default async function PassPage({ params }: { params: Promise<{ ticketId: string }> }) {
-  const { ticketId } = await params;
-  const ticketData = await getTicketData(ticketId);
+  const { ticketId: rawTicketId } = await params;
+  let ticketId = rawTicketId;
+  let ticketName = "";
+  let ticketPasses = "1";
+  let qrData = rawTicketId;
 
-  if (!ticketData || ticketData.status !== 'Approved') {
-    notFound();
+  try {
+    const { jwtVerify } = await import("jose");
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
+    const decoded = await jwtVerify(rawTicketId, secret);
+    ticketName = (decoded.payload.name as string) || "Sanskrutik Guest";
+    ticketPasses = (decoded.payload.passes as string) || "6";
+    ticketId = (decoded.payload.id as string) || rawTicketId;
+    qrData = rawTicketId;
+  } catch (e) {
+    const ticketData = await getTicketData(rawTicketId);
+
+    if (!ticketData || ticketData.status !== 'Approved') {
+      notFound();
+    }
+
+    ticketName = ticketData.name;
+    ticketPasses = ticketData.passes;
+
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
+    qrData = await new SignJWT({ 
+      id: rawTicketId, 
+      name: ticketData.name, 
+      passes: ticketData.passes 
+    })
+    .setProtectedHeader({ alg: 'HS256' })
+    .sign(secret);
   }
-
-  // Generate QR code data (JWT)
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
-  const qrData = await new SignJWT({ 
-    id: ticketId, 
-    name: ticketData.name, 
-    passes: ticketData.passes 
-  })
-  .setProtectedHeader({ alg: 'HS256' })
-  .sign(secret);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] bg-[url('/bg-vertical.jpg')] bg-cover bg-center bg-fixed flex items-center justify-center p-4">
@@ -57,8 +74,8 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
       <div className="z-10 w-full max-w-md">
         <PassClient 
           ticketId={ticketId}
-          name={ticketData.name}
-          passes={ticketData.passes}
+          name={ticketName}
+          passes={ticketPasses}
           qrData={qrData}
         />
       </div>

@@ -21,7 +21,7 @@ const staggerContainer = {
 
 const PARTNERS: Record<string, { name: string; code: string }> = {
   "roastery-culture": { name: "Roastery Culture", code: "RC2026" },
-  "monsoon": { name: "Monsoon", code: "Monsoon26" },
+  "monsoon": { name: "Monsoon", code: "MONSOON2026" },
   "tea-tappri": { name: "Tea Tappri", code: "TeaTappri26" }
 };
 
@@ -62,7 +62,7 @@ export default function PartnerPage({ params }: { params: Promise<{ id: string }
   }
 
   const getBasePrice = () => {
-    if (phase === 3) return 4000;
+    if (phase === 3) return 3500;
     if (phase === 2) return 3500;
     if (phase === 1) return 3000;
     return 2700;

@@ -11,7 +11,7 @@ export const VALID_REFERRAL_CODES = [
   "SSG26",
   "SANSKRUTIKVIP"
   ,
-  "Monsoon26",
+  "MONSOON2026",
   "RC2026",
   "TeaTappri26",
   // Add more codes here...

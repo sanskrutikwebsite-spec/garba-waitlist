@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Reusable animation variants
 const fadeUp: Variants = {
@@ -20,9 +20,21 @@ const staggerContainer = {
 };
 
 export default function Home() {
-  const [isArtistRevealed] = useState(
-    () => new Date() >= new Date("2026-09-24T00:00:00+05:30")
-  );
+  const [isEarlyBird, setIsEarlyBird] = useState(true);
+  const [isArtistRevealed, setIsArtistRevealed] = useState(false);
+
+  useEffect(() => {
+    // Cutoff: 72 hrs from tomorrow (assuming tomorrow is Aug 19 -> Aug 22 00:00)
+    const cutoff = new Date("2026-08-22T00:00:00+05:30");
+    if (new Date() >= cutoff) {
+      setIsEarlyBird(false);
+    }
+
+    const revealDate = new Date("2026-09-24T00:00:00+05:30");
+    if (new Date() >= revealDate) {
+      setIsArtistRevealed(true);
+    }
+  }, []);
 
   return (
     <main className="flex flex-col bg-[#fcfaf5] selection:bg-brand-primary selection:text-white font-sans text-foreground relative">

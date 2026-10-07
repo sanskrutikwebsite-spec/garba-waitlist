@@ -12,9 +12,11 @@ export async function POST(request: Request) {
     }
 
     let ticketId = jwtString;
+    let payloadData: any = null;
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
       const { payload } = await jwtVerify(jwtString, secret);
+      payloadData = payload;
       ticketId = payload.id as string;
     } catch (e) {
       // If it fails to verify, maybe it was an old raw UUID, or it's totally invalid.
@@ -50,6 +52,19 @@ export async function POST(request: Request) {
     });
 
     if (targetRows.length === 0) {
+      if (payloadData) {
+        const totalPasses = parseInt(payloadData.passes as string) || 1;
+        return NextResponse.json({ 
+          valid: true, 
+          message: "TICKET VERIFIED",
+          name: (payloadData.name as string) || "Pass Holder",
+          passes: totalPasses,
+          scannedCount: 0,
+          remaining: totalPasses,
+          ticketId: (payloadData.id as string) || ticketId
+        });
+      }
+
       // Fake/Invalid ticket
       return NextResponse.json({ 
         valid: false, 
