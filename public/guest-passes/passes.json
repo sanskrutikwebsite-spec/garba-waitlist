@@ -1,0 +1,68 @@
+[
+  {
+    "index": 1,
+    "name": "Sanskrutik Guest",
+    "passes": 50,
+    "ticketId": "13840740-ad08-43bb-a9c3-eb78db576d51",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzODQwNzQwLWFkMDgtNDNiYi1hOWMzLWViNzhkYjU3NmQ1MSIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiNTAifQ.f2vCybzBW-fMQ-Id28HUScYZRDEKDd1v5Jago6nvRjI",
+    "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzODQwNzQwLWFkMDgtNDNiYi1hOWMzLWViNzhkYjU3NmQ1MSIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiNTAifQ.f2vCybzBW-fMQ-Id28HUScYZRDEKDd1v5Jago6nvRjI",
+    "localPassUrl": "http://localhost:3000/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEzODQwNzQwLWFkMDgtNDNiYi1hOWMzLWViNzhkYjU3NmQ1MSIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiNTAifQ.f2vCybzBW-fMQ-Id28HUScYZRDEKDd1v5Jago6nvRjI",
+    "qrFilename": "pass_1_50_passes_13840740.png",
+    "qrRelativeUrl": "/guest-passes/pass_1_50_passes_13840740.png"
+  },
+  {
+    "index": 2,
+    "name": "Sanskrutik Guest",
+    "passes": 30,
+    "ticketId": "015a94c1-7727-43db-b373-9973a30b5210",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjAxNWE5NGMxLTc3MjctNDNkYi1iMzczLTk5NzNhMzBiNTIxMCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMzAifQ.219_oXEWSX1D8JHtgupkKUvgaERlDqEbKu2_r2J-Dc4",
+    "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjAxNWE5NGMxLTc3MjctNDNkYi1iMzczLTk5NzNhMzBiNTIxMCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMzAifQ.219_oXEWSX1D8JHtgupkKUvgaERlDqEbKu2_r2J-Dc4",
+    "localPassUrl": "http://localhost:3000/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjAxNWE5NGMxLTc3MjctNDNkYi1iMzczLTk5NzNhMzBiNTIxMCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMzAifQ.219_oXEWSX1D8JHtgupkKUvgaERlDqEbKu2_r2J-Dc4",
+    "qrFilename": "pass_2_30_passes_015a94c1.png",
+    "qrRelativeUrl": "/guest-passes/pass_2_30_passes_015a94c1.png"
+  },
+  {
+    "index": 3,
+    "name": "Sanskrutik Guest",
+    "passes": 30,
+    "ticketId": "8e72f6c8-74ad-4e22-a153-a06d9b749878",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjhlNzJmNmM4LTc0YWQtNGUyMi1hMTUzLWEwNmQ5Yjc0OTg3OCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMzAifQ.SmUZAYbml294U4Z27Iwy8M6PQUnUNNdDF0CS9p83MKo",
+    "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjhlNzJmNmM4LTc0YWQtNGUyMi1hMTUzLWEwNmQ5Yjc0OTg3OCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMzAifQ.SmUZAYbml294U4Z27Iwy8M6PQUnUNNdDF0CS9p83MKo",
+    "localPassUrl": "http://localhost:3000/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjhlNzJmNmM4LTc0YWQtNGUyMi1hMTUzLWEwNmQ5Yjc0OTg3OCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMzAifQ.SmUZAYbml294U4Z27Iwy8M6PQUnUNNdDF0CS9p83MKo",
+    "qrFilename": "pass_3_30_passes_8e72f6c8.png",
+    "qrRelativeUrl": "/guest-passes/pass_3_30_passes_8e72f6c8.png"
+  },
+  {
+    "index": 4,
+    "name": "Sanskrutik Guest",
+    "passes": 20,
+    "ticketId": "e687786c-a3ca-4027-83b1-83554853cc22",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImU2ODc3ODZjLWEzY2EtNDAyNy04M2IxLTgzNTU0ODUzY2MyMiIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMjAifQ.p2vSh-n7I2UUbRU4U_m-8lcGZGVM-V8oaei8TQ1NyGc",
+    "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImU2ODc3ODZjLWEzY2EtNDAyNy04M2IxLTgzNTU0ODUzY2MyMiIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMjAifQ.p2vSh-n7I2UUbRU4U_m-8lcGZGVM-V8oaei8TQ1NyGc",
+    "localPassUrl": "http://localhost:3000/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImU2ODc3ODZjLWEzY2EtNDAyNy04M2IxLTgzNTU0ODUzY2MyMiIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMjAifQ.p2vSh-n7I2UUbRU4U_m-8lcGZGVM-V8oaei8TQ1NyGc",
+    "qrFilename": "pass_4_20_passes_e687786c.png",
+    "qrRelativeUrl": "/guest-passes/pass_4_20_passes_e687786c.png"
+  },
+  {
+    "index": 5,
+    "name": "Sanskrutik Guest",
+    "passes": 20,
+    "ticketId": "ec4bcf03-0464-4c1f-91e6-8ef3cc501831",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImVjNGJjZjAzLTA0NjQtNGMxZi05MWU2LThlZjNjYzUwMTgzMSIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMjAifQ.hbCvKH7IakaWMbP2lu2pULoS9dH2wZu6jct6yznbF2k",
+    "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImVjNGJjZjAzLTA0NjQtNGMxZi05MWU2LThlZjNjYzUwMTgzMSIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMjAifQ.hbCvKH7IakaWMbP2lu2pULoS9dH2wZu6jct6yznbF2k",
+    "localPassUrl": "http://localhost:3000/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImVjNGJjZjAzLTA0NjQtNGMxZi05MWU2LThlZjNjYzUwMTgzMSIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMjAifQ.hbCvKH7IakaWMbP2lu2pULoS9dH2wZu6jct6yznbF2k",
+    "qrFilename": "pass_5_20_passes_ec4bcf03.png",
+    "qrRelativeUrl": "/guest-passes/pass_5_20_passes_ec4bcf03.png"
+  },
+  {
+    "index": 6,
+    "name": "Sanskrutik Guest",
+    "passes": 10,
+    "ticketId": "908ca3f0-3634-4641-bd8f-d7a5444bcd1d",
+    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjkwOGNhM2YwLTM2MzQtNDY0MS1iZDhmLWQ3YTU0NDRiY2QxZCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMTAifQ.ocvTjGfF4VQUtAL5sJPRVZ2fXB4-8YUoGwv-Zz40sdA",
+    "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjkwOGNhM2YwLTM2MzQtNDY0MS1iZDhmLWQ3YTU0NDRiY2QxZCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMTAifQ.ocvTjGfF4VQUtAL5sJPRVZ2fXB4-8YUoGwv-Zz40sdA",
+    "localPassUrl": "http://localhost:3000/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjkwOGNhM2YwLTM2MzQtNDY0MS1iZDhmLWQ3YTU0NDRiY2QxZCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMTAifQ.ocvTjGfF4VQUtAL5sJPRVZ2fXB4-8YUoGwv-Zz40sdA",
+    "qrFilename": "pass_6_10_passes_908ca3f0.png",
+    "qrRelativeUrl": "/guest-passes/pass_6_10_passes_908ca3f0.png"
+  }
+]

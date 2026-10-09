@@ -10,6 +10,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    let rawTicketId = (ticketId || "").trim();
+    try {
+      rawTicketId = decodeURIComponent(rawTicketId);
+    } catch (e) {
+      // ignore
+    }
+
+    if (rawTicketId.includes('/pass/')) {
+      rawTicketId = rawTicketId.split('/pass/').pop()?.split('?')[0] || rawTicketId;
+    } else if (rawTicketId.includes('http')) {
+      try {
+        const url = new URL(rawTicketId);
+        rawTicketId = url.searchParams.get('id') || url.pathname.split('/').pop() || rawTicketId;
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    let cleanSearchId = rawTicketId;
+    try {
+      const { jwtVerify } = await import("jose");
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
+      const { payload } = await jwtVerify(rawTicketId, secret);
+      cleanSearchId = (payload.id as string) || rawTicketId;
+    } catch (e) {
+      // Raw UUID
+    }
+
     const serviceAccountAuth = new JWT({
       email: process.env.GOOGLE_CLIENT_EMAIL,
       key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
@@ -33,16 +61,49 @@ export async function POST(request: Request) {
     const targetRow = rows.find(r => {
       const tid = r.get('TICKET ID') || '';
       const phone = r.get('PHONE') || r.get('PHONE NUMBER') || '';
-      return tid === ticketId || (ticketId.length >= 6 && tid.startsWith(ticketId)) || phone === ticketId;
+      return tid === cleanSearchId || tid === rawTicketId || (cleanSearchId.length >= 6 && tid.startsWith(cleanSearchId)) || phone === cleanSearchId;
     });
 
     if (!targetRow) {
+      let name = "Pass Holder";
+      let passesCount = parseInt(enteringCount) || 1;
+      let cleanTicketId = ticketId;
+      try {
+        const { jwtVerify } = await import("jose");
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
+        const { payload } = await jwtVerify(ticketId, secret);
+        name = (payload.name as string) || "Pass Holder";
+        passesCount = parseInt(payload.passes as string) || passesCount;
+        cleanTicketId = (payload.id as string) || ticketId;
+      } catch (e) {
+        // Raw UUID or fallback
+      }
+
+      const newScannedCount = parseInt(enteringCount) || 1;
+      const newStatus = (newScannedCount >= passesCount) ? 'Scanned' : 'Approved';
+
+      try {
+        await sheet.addRow({
+          'NAME': name,
+          'EMAIL': 'Offline Pass',
+          'PHONE': 'OFFLINE',
+          'PASSES': passesCount.toString(),
+          'SCREENTSHOT': 'Offline Pass',
+          'STATUS': newStatus,
+          'DATE': new Date().toISOString(),
+          'TICKET ID': cleanTicketId,
+          'SCANNED COUNT': newScannedCount.toString()
+        });
+      } catch (e) {
+        console.error("Error auto-adding missing row during scan confirmation:", e);
+      }
+
       return NextResponse.json({ 
         valid: true, 
         message: "ENTRY CONFIRMED",
-        name: "Pass Holder",
-        passes: parseInt(enteringCount) || 1,
-        scannedCount: parseInt(enteringCount) || 1
+        name: name,
+        passes: passesCount,
+        scannedCount: newScannedCount
       });
     }
 

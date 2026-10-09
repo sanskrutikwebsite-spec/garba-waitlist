@@ -11,16 +11,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing Ticket ID" }, { status: 400 });
     }
 
-    let ticketId = jwtString;
+    let rawInput = (jwtString || "").trim();
+    try {
+      rawInput = decodeURIComponent(rawInput);
+    } catch (e) {
+      // ignore
+    }
+
+    if (rawInput.includes('/pass/')) {
+      rawInput = rawInput.split('/pass/').pop()?.split('?')[0] || rawInput;
+    } else if (rawInput.includes('http')) {
+      try {
+        const url = new URL(rawInput);
+        rawInput = url.searchParams.get('id') || url.pathname.split('/').pop() || rawInput;
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    let ticketId = rawInput;
     let payloadData: any = null;
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
-      const { payload } = await jwtVerify(jwtString, secret);
+      const { payload } = await jwtVerify(rawInput, secret);
       payloadData = payload;
-      ticketId = payload.id as string;
+      ticketId = (payload.id as string) || rawInput;
     } catch (e) {
-      // If it fails to verify, maybe it was an old raw UUID, or it's totally invalid.
-      // We will let the normal UUID lookup fail below if it's junk.
+      // Raw UUID, phone number, or offline string
     }
 
     const serviceAccountAuth = new JWT({

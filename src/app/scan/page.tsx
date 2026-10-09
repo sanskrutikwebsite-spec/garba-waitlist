@@ -71,10 +71,16 @@ export default function Scanner() {
     }
 
     try {
-      let ticketId = decodedText;
-      if (decodedText.includes('http')) {
-        const url = new URL(decodedText);
-        ticketId = url.searchParams.get('id') || decodedText;
+      let ticketId = (decodedText || "").trim();
+      if (ticketId.includes('/pass/')) {
+        ticketId = ticketId.split('/pass/').pop()?.split('?')[0] || ticketId;
+      } else if (ticketId.includes('http')) {
+        try {
+          const url = new URL(ticketId);
+          ticketId = url.searchParams.get('id') || url.pathname.split('/').pop() || ticketId;
+        } catch (e) {
+          // fallback
+        }
       }
 
       const res = await fetch("/api/scan", {

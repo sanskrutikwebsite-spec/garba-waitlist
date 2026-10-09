@@ -174,19 +174,17 @@ export default function Home() {
             className="flex flex-col gap-6 items-center"
           >
             <h2 className="text-5xl lg:text-7xl font-extrabold text-foreground tracking-tight leading-tight">
-              Ready to <br />
-              <span className="text-brand-primary italic">Join Us?</span>
+              All Passes Are <br />
+              <span className="text-red-600 italic">Sold Out!</span>
             </h2>
             <p className="text-xl lg:text-2xl text-foreground/80 font-medium max-w-2xl">
-              Secure your passes now. Experience the rhythm, the colors, and the unmatched energy of Sanskrutik Sheri Garba.
+              Thank you for your overwhelming love and support! Registrations for Sanskrutik Sheri Garba are now officially closed.
             </p>
-            <Link
-              href="/checkout"
-              className="mt-8 flex items-center justify-center gap-4 bg-brand-primary hover:bg-brand-primary/90 text-white font-bold text-xl py-6 px-12 rounded-full transition-all duration-300 shadow-[0_0_40px_rgba(227,197,127,0.4)] hover:shadow-[0_0_60px_rgba(227,197,127,0.6)] hover:-translate-y-1 group"
+            <div
+              className="mt-8 flex items-center justify-center gap-4 bg-red-600 text-white font-bold text-xl py-6 px-12 rounded-full shadow-[0_0_40px_rgba(220,38,38,0.3)] cursor-not-allowed select-none"
             >
-              <span className="tracking-[0.1em] uppercase">Book Your Pass</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-2 transition-transform"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-            </Link>
+              <span className="tracking-[0.1em] uppercase">All Passes Sold Out</span>
+            </div>
           </motion.div>
         </div>
       </section>

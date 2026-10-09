@@ -1,0 +1,8 @@
+{
+  "ticketId": "f7a2ea3d-97c9-4ce6-977c-5077ad7da048",
+  "name": "Sanskrutik Guest",
+  "passes": "10",
+  "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImY3YTJlYTNkLTk3YzktNGNlNi05NzdjLTUwNzdhZDdkYTA0OCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMTAifQ.EnNzrCRX-rvdIV455kSIXU1C_BbZOFMwlcgUz0zPilQ",
+  "passUrl": "https://www.sanskrutikgarba.in/pass/eyJhbGciOiJIUzI1NiJ9.eyJpZCI6ImY3YTJlYTNkLTk3YzktNGNlNi05NzdjLTUwNzdhZDdkYTA0OCIsIm5hbWUiOiJTYW5za3J1dGlrIEd1ZXN0IiwicGFzc2VzIjoiMTAifQ.EnNzrCRX-rvdIV455kSIXU1C_BbZOFMwlcgUz0zPilQ",
+  "qrFilename": "direct_pass_10_passes_f7a2ea3d.png"
+}
