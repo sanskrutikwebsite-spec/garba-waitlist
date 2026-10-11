@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 import { jwtVerify } from "jose";
-import { findGuestPass } from "@/lib/guestPassRegistry";
+import { findGuestPass, findGuestPassesByPhone, normalizePhone, cleanTicketInput } from "@/lib/guestPassRegistry";
 import { getGuestScans } from "@/lib/guestPassStore";
 
 export async function POST(request: Request) {
@@ -13,26 +13,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing Ticket ID" }, { status: 400 });
     }
 
-    let rawInput = (jwtString || "").trim();
-    try {
-      rawInput = decodeURIComponent(rawInput);
-    } catch (e) {
-      // ignore
-    }
-
-    // Extract ticket ID from URL if scanned as full URL
-    if (rawInput.includes('/pass/')) {
-      rawInput = rawInput.split('/pass/').pop()?.split('?')[0] || rawInput;
-    } else if (rawInput.includes('http')) {
-      try {
-        const url = new URL(rawInput);
-        rawInput = url.searchParams.get('id') || url.pathname.split('/').pop() || rawInput;
-      } catch (e) {
-        // fallback
-      }
-    }
+    const rawInput = cleanTicketInput(jwtString);
 
     // ─── PRIORITY 1: Hardcoded guest pass registry ───────────────────────────
+    // Check if input is a phone number with multiple guest passes
+    const phoneMatches = findGuestPassesByPhone(rawInput);
+    if (phoneMatches.length > 1) {
+      const guestScans = getGuestScans();
+      const tickets = phoneMatches.map(p => {
+        const record = guestScans[p.ticketId.toLowerCase()];
+        const scannedCount = record ? record.scannedCount : 0;
+        const remaining = Math.max(0, p.passes - scannedCount);
+        return {
+          ticketId: p.ticketId,
+          name: `${p.name} (Pass #${p.id})`,
+          totalPasses: p.passes,
+          remaining,
+          status: remaining > 0 ? "Approved" : "Scanned"
+        };
+      });
+      return NextResponse.json({ multiple: true, tickets });
+    }
+
+    // Check single match (by full UUID, short ticket ID prefix, or single phone match)
     const guestPass = findGuestPass(rawInput);
     if (guestPass) {
       const guestScans = getGuestScans();
@@ -45,14 +48,14 @@ export async function POST(request: Request) {
           valid: false,
           message: "ALREADY USED - NO PASSES REMAINING",
           errorType: "USED",
-          name: guestPass.name || "Guest"
+          name: `${guestPass.name} (Pass #${guestPass.id})`
         }, { status: 409 });
       }
 
       return NextResponse.json({
         valid: true,
         message: "TICKET VERIFIED",
-        name: guestPass.name || "Guest",
+        name: `${guestPass.name} (Pass #${guestPass.id})`,
         passes: guestPass.passes,
         scannedCount,
         remaining,
@@ -75,7 +78,7 @@ export async function POST(request: Request) {
 
     if (payloadData) {
       const guestScans = getGuestScans();
-      const record = guestScans[ticketId];
+      const record = guestScans[ticketId.toLowerCase()];
       const totalPasses = parseInt(payloadData.passes as string) || 1;
       const scannedCount = record ? record.scannedCount : 0;
       const remaining = totalPasses - scannedCount;
@@ -118,10 +121,17 @@ export async function POST(request: Request) {
 
     const rows = await sheet.getRows();
 
+    const cleanSearchPhone = normalizePhone(ticketId);
+    const searchTid = ticketId.toLowerCase();
+
     const targetRows = rows.filter(r => {
-      const tid = r.get('TICKET ID') || '';
-      const phone = r.get('PHONE') || r.get('PHONE NUMBER') || '';
-      return tid === ticketId || (ticketId.length >= 6 && tid.startsWith(ticketId)) || phone === ticketId;
+      const tid = (r.get('TICKET ID') || '').trim().toLowerCase();
+      const rowPhone = normalizePhone(r.get('PHONE') || r.get('PHONE NUMBER') || '');
+      
+      const tidMatch = tid === searchTid || (searchTid.length >= 6 && tid.startsWith(searchTid));
+      const phoneMatch = cleanSearchPhone.length >= 10 && rowPhone === cleanSearchPhone;
+
+      return tidMatch || phoneMatch;
     });
 
     if (targetRows.length === 0) {
@@ -140,7 +150,7 @@ export async function POST(request: Request) {
           ticketId: r.get('TICKET ID'),
           name: r.get('NAME'),
           totalPasses,
-          remaining: totalPasses - scannedCount,
+          remaining: Math.max(0, totalPasses - scannedCount),
           status: r.get('STATUS')
         };
       });

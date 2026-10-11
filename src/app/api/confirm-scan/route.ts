@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
-import { findGuestPass } from "@/lib/guestPassRegistry";
+import { findGuestPass, normalizePhone, cleanTicketInput } from "@/lib/guestPassRegistry";
 import { getGuestScans, saveGuestScan } from "@/lib/guestPassStore";
 
 export async function POST(request: Request) {
@@ -12,23 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    let rawTicketId = (ticketId || "").trim();
-    try {
-      rawTicketId = decodeURIComponent(rawTicketId);
-    } catch (e) {
-      // ignore
-    }
-
-    if (rawTicketId.includes('/pass/')) {
-      rawTicketId = rawTicketId.split('/pass/').pop()?.split('?')[0] || rawTicketId;
-    } else if (rawTicketId.includes('http')) {
-      try {
-        const url = new URL(rawTicketId);
-        rawTicketId = url.searchParams.get('id') || url.pathname.split('/').pop() || rawTicketId;
-      } catch (e) {
-        // fallback
-      }
-    }
+    const rawTicketId = cleanTicketInput(ticketId);
 
     // ─── PRIORITY 1: Hardcoded guest pass registry ───────────────────────────
     const guestPass = findGuestPass(rawTicketId);
@@ -45,14 +29,14 @@ export async function POST(request: Request) {
       saveGuestScan(key, {
         scannedCount: newScanned,
         totalPasses: guestPass.passes,
-        name: guestPass.name || "Guest",
+        name: `${guestPass.name} (Pass #${guestPass.id})`,
         lastScanned: new Date().toISOString()
       });
 
       return NextResponse.json({
         valid: true,
         message: "ENTRY CONFIRMED",
-        name: guestPass.name || "Guest",
+        name: `${guestPass.name} (Pass #${guestPass.id})`,
         passes: guestPass.passes,
         scannedCount: newScanned
       });
@@ -116,12 +100,16 @@ export async function POST(request: Request) {
 
     const rows = await sheet.getRows();
 
+    const cleanConfirmPhone = normalizePhone(cleanSearchId);
+    const confirmTid = cleanSearchId.toLowerCase();
+
     const targetRow = rows.find(r => {
-      const tid = r.get('TICKET ID') || '';
-      const phone = r.get('PHONE') || r.get('PHONE NUMBER') || '';
-      return tid === cleanSearchId || tid === rawTicketId ||
-        (cleanSearchId.length >= 6 && tid.startsWith(cleanSearchId)) ||
-        phone === cleanSearchId;
+      const tid = (r.get('TICKET ID') || '').trim().toLowerCase();
+      const rowPhone = normalizePhone(r.get('PHONE') || r.get('PHONE NUMBER') || '');
+      
+      return tid === confirmTid ||
+        (confirmTid.length >= 6 && tid.startsWith(confirmTid)) ||
+        (cleanConfirmPhone.length >= 10 && rowPhone === cleanConfirmPhone);
     });
 
     if (!targetRow) {

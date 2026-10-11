@@ -18,14 +18,20 @@ async function getTicketData(ticketId: string) {
     const sheet = doc.sheetsByIndex[0];
     
     const rows = await sheet.getRows();
-    const targetRow = rows.find(r => r.get('TICKET ID') === ticketId);
+    const search = ticketId.trim().toLowerCase();
+    const targetRow = rows.find(r => {
+      const tid = (r.get('TICKET ID') || '').trim().toLowerCase();
+      return tid === search || (search.length >= 6 && tid.startsWith(search));
+    });
 
     if (!targetRow) return null;
 
     return {
+      ticketId: targetRow.get('TICKET ID'),
       name: targetRow.get('NAME'),
       passes: targetRow.get('PASSES'),
       status: targetRow.get('STATUS'),
+      phone: targetRow.get('PHONE') || targetRow.get('PHONE NUMBER') || '',
     };
   } catch (error) {
     console.error("Error fetching ticket:", error);
@@ -38,12 +44,13 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
   let ticketId = rawTicketId;
   let ticketName = "";
   let ticketPasses = "1";
-  // QR data is just the full pass URL (short, real-looking)
-  const qrData = `https://www.sanskrutikgarba.in/pass/${rawTicketId}`;
+  let ticketPhone = "";
+  let qrData = `https://www.sanskrutikgarba.in/pass/${rawTicketId}`;
 
   // 1. Check hardcoded guest pass registry first (no Google Sheets, no env vars)
   const guestPass = findGuestPass(rawTicketId);
   if (guestPass) {
+    qrData = `https://www.sanskrutikgarba.in/pass/${guestPass.ticketId}`;
     return (
       <div className="min-h-screen bg-[#0a0a0a] bg-[url('/bg-vertical.jpg')] bg-cover bg-center bg-fixed flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
@@ -52,6 +59,7 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
             ticketId={guestPass.ticketId}
             name={guestPass.name}
             passes={String(guestPass.passes)}
+            phone={guestPass.phone}
             qrData={qrData}
           />
         </div>
@@ -75,12 +83,15 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
       notFound();
     }
 
+    ticketId = ticketData.ticketId || rawTicketId;
     ticketName = ticketData.name;
     ticketPasses = ticketData.passes;
+    ticketPhone = ticketData.phone;
+    qrData = `https://www.sanskrutikgarba.in/pass/${ticketId}`;
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
     await new SignJWT({ 
-      id: rawTicketId, 
+      id: ticketId, 
       name: ticketData.name, 
       passes: ticketData.passes 
     })
@@ -97,6 +108,7 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
           ticketId={ticketId}
           name={ticketName}
           passes={ticketPasses}
+          phone={ticketPhone}
           qrData={qrData}
         />
       </div>

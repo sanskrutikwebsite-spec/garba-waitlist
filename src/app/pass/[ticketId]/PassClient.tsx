@@ -10,9 +10,10 @@ type PassClientProps = {
   name: string;
   passes: string;
   qrData: string;
+  phone?: string;
 };
 
-export default function PassClient({ ticketId, name, passes, qrData }: PassClientProps) {
+export default function PassClient({ ticketId, name, passes, qrData, phone }: PassClientProps) {
   const passRef = useRef<HTMLDivElement>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
@@ -159,6 +160,13 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
               <span className="text-lg font-mono tracking-wider">{ticketId.substring(0, 8).toUpperCase()}</span>
             </div>
           </div>
+
+          {phone && phone.trim() !== "" && (
+            <div className="flex justify-between items-center w-full bg-black/20 border border-[#E3C57F]/20 rounded-xl px-4 py-2 mt-1">
+              <span className="text-xs uppercase tracking-widest text-white/50 font-bold">Contact</span>
+              <span className="text-sm font-mono tracking-wider font-bold text-[#E3C57F]">{phone}</span>
+            </div>
+          )}
         </div>
       </div>
 
