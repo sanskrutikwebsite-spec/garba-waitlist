@@ -3,6 +3,7 @@ import { JWT } from "google-auth-library";
 import { notFound } from "next/navigation";
 import PassClient from "./PassClient";
 import { SignJWT } from "jose";
+import { findGuestPass } from "@/lib/guestPassRegistry";
 
 async function getTicketData(ticketId: string) {
   try {
@@ -37,17 +38,37 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
   let ticketId = rawTicketId;
   let ticketName = "";
   let ticketPasses = "1";
-  let qrData = rawTicketId;
+  // QR data is just the full pass URL (short, real-looking)
+  const qrData = `https://www.sanskrutikgarba.in/pass/${rawTicketId}`;
 
+  // 1. Check hardcoded guest pass registry first (no Google Sheets, no env vars)
+  const guestPass = findGuestPass(rawTicketId);
+  if (guestPass) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] bg-[url('/bg-vertical.jpg')] bg-cover bg-center bg-fixed flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+        <div className="z-10 w-full max-w-md">
+          <PassClient
+            ticketId={guestPass.ticketId}
+            name={guestPass.name}
+            passes={String(guestPass.passes)}
+            qrData={qrData}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Try to decode as JWT (legacy passes)
   try {
     const { jwtVerify } = await import("jose");
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
     const decoded = await jwtVerify(rawTicketId, secret);
-    ticketName = (decoded.payload.name as string) || "Sanskrutik Guest";
-    ticketPasses = (decoded.payload.passes as string) || "6";
+    ticketName = (decoded.payload.name as string) || "";
+    ticketPasses = (decoded.payload.passes as string) || "1";
     ticketId = (decoded.payload.id as string) || rawTicketId;
-    qrData = rawTicketId;
   } catch (e) {
+    // 3. Fallback: look up in Google Sheets
     const ticketData = await getTicketData(rawTicketId);
 
     if (!ticketData || ticketData.status !== 'Approved') {
@@ -58,7 +79,7 @@ export default async function PassPage({ params }: { params: Promise<{ ticketId:
     ticketPasses = ticketData.passes;
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
-    qrData = await new SignJWT({ 
+    await new SignJWT({ 
       id: rawTicketId, 
       name: ticketData.name, 
       passes: ticketData.passes 

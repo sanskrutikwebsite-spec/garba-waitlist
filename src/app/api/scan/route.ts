@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 import { jwtVerify } from "jose";
+import { findGuestPass } from "@/lib/guestPassRegistry";
+import { getGuestScans } from "@/lib/guestPassStore";
 
 export async function POST(request: Request) {
   try {
@@ -18,6 +20,7 @@ export async function POST(request: Request) {
       // ignore
     }
 
+    // Extract ticket ID from URL if scanned as full URL
     if (rawInput.includes('/pass/')) {
       rawInput = rawInput.split('/pass/').pop()?.split('?')[0] || rawInput;
     } else if (rawInput.includes('http')) {
@@ -29,39 +32,92 @@ export async function POST(request: Request) {
       }
     }
 
+    // ─── PRIORITY 1: Hardcoded guest pass registry ───────────────────────────
+    const guestPass = findGuestPass(rawInput);
+    if (guestPass) {
+      const guestScans = getGuestScans();
+      const record = guestScans[guestPass.ticketId.toLowerCase()];
+      const scannedCount = record ? record.scannedCount : 0;
+      const remaining = guestPass.passes - scannedCount;
+
+      if (remaining <= 0) {
+        return NextResponse.json({
+          valid: false,
+          message: "ALREADY USED - NO PASSES REMAINING",
+          errorType: "USED",
+          name: guestPass.name || "Guest"
+        }, { status: 409 });
+      }
+
+      return NextResponse.json({
+        valid: true,
+        message: "TICKET VERIFIED",
+        name: guestPass.name || "Guest",
+        passes: guestPass.passes,
+        scannedCount,
+        remaining,
+        ticketId: guestPass.ticketId
+      });
+    }
+
     let ticketId = rawInput;
     let payloadData: any = null;
+
+    // ─── PRIORITY 2: Legacy JWT passes ───────────────────────────────────────
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
       const { payload } = await jwtVerify(rawInput, secret);
       payloadData = payload;
       ticketId = (payload.id as string) || rawInput;
     } catch (e) {
-      // Raw UUID, phone number, or offline string
+      // Raw UUID or phone number
     }
 
+    if (payloadData) {
+      const guestScans = getGuestScans();
+      const record = guestScans[ticketId];
+      const totalPasses = parseInt(payloadData.passes as string) || 1;
+      const scannedCount = record ? record.scannedCount : 0;
+      const remaining = totalPasses - scannedCount;
+
+      if (remaining <= 0) {
+        return NextResponse.json({
+          valid: false,
+          message: "ALREADY USED - NO PASSES REMAINING",
+          errorType: "USED",
+          name: (payloadData.name as string) || "Guest"
+        }, { status: 409 });
+      }
+
+      return NextResponse.json({
+        valid: true,
+        message: "TICKET VERIFIED",
+        name: (payloadData.name as string) || "Guest",
+        passes: totalPasses,
+        scannedCount,
+        remaining,
+        ticketId: ticketId
+      });
+    }
+
+    // ─── PRIORITY 3: Google Sheets (regular registered attendees) ─────────────
     const serviceAccountAuth = new JWT({
       email: process.env.GOOGLE_CLIENT_EMAIL,
       key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-      ],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID as string, serviceAccountAuth);
-    await doc.loadInfo(); 
+    await doc.loadInfo();
     const sheet = doc.sheetsByIndex[0];
     await sheet.loadHeaderRow();
-    
-    // Auto-create SCANNED COUNT column if missing
+
     if (!sheet.headerValues.includes('SCANNED COUNT')) {
       await sheet.setHeaderRow([...sheet.headerValues, 'SCANNED COUNT']);
     }
-    
-    
+
     const rows = await sheet.getRows();
-    
-    // Find ALL rows with this specific secure Ticket ID, or by phone number, or by short ID
+
     const targetRows = rows.filter(r => {
       const tid = r.get('TICKET ID') || '';
       const phone = r.get('PHONE') || r.get('PHONE NUMBER') || '';
@@ -69,29 +125,14 @@ export async function POST(request: Request) {
     });
 
     if (targetRows.length === 0) {
-      if (payloadData) {
-        const totalPasses = parseInt(payloadData.passes as string) || 1;
-        return NextResponse.json({ 
-          valid: true, 
-          message: "TICKET VERIFIED",
-          name: (payloadData.name as string) || "Pass Holder",
-          passes: totalPasses,
-          scannedCount: 0,
-          remaining: totalPasses,
-          ticketId: (payloadData.id as string) || ticketId
-        });
-      }
-
-      // Fake/Invalid ticket
-      return NextResponse.json({ 
-        valid: false, 
+      return NextResponse.json({
+        valid: false,
         message: "INVALID TICKET - NO MATCH FOUND",
         errorType: "INVALID"
       }, { status: 404 });
     }
 
     if (targetRows.length > 1) {
-      // Return list of passes to let the volunteer choose
       const tickets = targetRows.map(r => {
         const totalPasses = parseInt(r.get('PASSES')) || 1;
         const scannedCount = parseInt(r.get('SCANNED COUNT')) || 0;
@@ -103,21 +144,15 @@ export async function POST(request: Request) {
           status: r.get('STATUS')
         };
       });
-      
-      return NextResponse.json({
-        multiple: true,
-        tickets
-      });
+      return NextResponse.json({ multiple: true, tickets });
     }
 
     const targetRow = targetRows[0];
-
     const currentStatus = targetRow.get('STATUS');
 
     if (currentStatus === 'Scanned') {
-      // Already used
-      return NextResponse.json({ 
-        valid: false, 
+      return NextResponse.json({
+        valid: false,
         message: "ALREADY USED - THIS TICKET WAS ALREADY SCANNED",
         errorType: "USED",
         name: targetRow.get('NAME')
@@ -125,9 +160,8 @@ export async function POST(request: Request) {
     }
 
     if (currentStatus !== 'Approved') {
-      // Found but not approved
-      return NextResponse.json({ 
-        valid: false, 
+      return NextResponse.json({
+        valid: false,
         message: "NOT APPROVED - TICKET IS PENDING OR REJECTED",
         errorType: "PENDING",
         name: targetRow.get('NAME')
@@ -139,23 +173,21 @@ export async function POST(request: Request) {
     const remaining = totalPasses - scannedCount;
 
     if (remaining <= 0) {
-      return NextResponse.json({ 
-        valid: false, 
+      return NextResponse.json({
+        valid: false,
         message: "ALREADY USED - NO PASSES REMAINING",
         errorType: "USED",
         name: targetRow.get('NAME')
       }, { status: 409 });
     }
 
-    console.log(`Ticket ${ticketId} verified for ${targetRow.get('NAME')}. Remaining: ${remaining}`);
-
-    return NextResponse.json({ 
-      valid: true, 
+    return NextResponse.json({
+      valid: true,
       message: "TICKET VERIFIED",
       name: targetRow.get('NAME'),
       passes: totalPasses,
-      scannedCount: scannedCount,
-      remaining: remaining,
+      scannedCount,
+      remaining,
       ticketId: targetRow.get('TICKET ID')
     });
 

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
+import { findGuestPass } from "@/lib/guestPassRegistry";
+import { getGuestScans, saveGuestScan } from "@/lib/guestPassStore";
 
 export async function POST(request: Request) {
   try {
@@ -28,109 +30,119 @@ export async function POST(request: Request) {
       }
     }
 
+    // ─── PRIORITY 1: Hardcoded guest pass registry ───────────────────────────
+    const guestPass = findGuestPass(rawTicketId);
+    if (guestPass) {
+      const key = guestPass.ticketId.toLowerCase();
+      const guestScans = getGuestScans();
+      const currentScanned = guestScans[key]?.scannedCount || 0;
+      const newScanned = currentScanned + parseInt(enteringCount);
+
+      if (newScanned > guestPass.passes) {
+        return NextResponse.json({ valid: false, message: "Cannot exceed total passes" }, { status: 400 });
+      }
+
+      saveGuestScan(key, {
+        scannedCount: newScanned,
+        totalPasses: guestPass.passes,
+        name: guestPass.name || "Guest",
+        lastScanned: new Date().toISOString()
+      });
+
+      return NextResponse.json({
+        valid: true,
+        message: "ENTRY CONFIRMED",
+        name: guestPass.name || "Guest",
+        passes: guestPass.passes,
+        scannedCount: newScanned
+      });
+    }
+
+    // ─── PRIORITY 2: Legacy JWT passes ───────────────────────────────────────
     let cleanSearchId = rawTicketId;
+    let payloadData: any = null;
     try {
       const { jwtVerify } = await import("jose");
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
       const { payload } = await jwtVerify(rawTicketId, secret);
+      payloadData = payload;
       cleanSearchId = (payload.id as string) || rawTicketId;
     } catch (e) {
       // Raw UUID
     }
 
+    if (payloadData) {
+      const key = cleanSearchId.toLowerCase();
+      const guestScans = getGuestScans();
+      const currentScanned = guestScans[key]?.scannedCount || 0;
+      const totalPasses = parseInt(payloadData.passes as string) || 1;
+      const newScanned = currentScanned + parseInt(enteringCount);
+
+      if (newScanned > totalPasses) {
+        return NextResponse.json({ valid: false, message: "Cannot exceed total passes" }, { status: 400 });
+      }
+
+      saveGuestScan(key, {
+        scannedCount: newScanned,
+        totalPasses,
+        name: (payloadData.name as string) || "Guest",
+        lastScanned: new Date().toISOString()
+      });
+
+      return NextResponse.json({
+        valid: true,
+        message: "ENTRY CONFIRMED",
+        name: (payloadData.name as string) || "Guest",
+        passes: totalPasses,
+        scannedCount: newScanned
+      });
+    }
+
+    // ─── PRIORITY 3: Google Sheets (regular registered attendees) ─────────────
     const serviceAccountAuth = new JWT({
       email: process.env.GOOGLE_CLIENT_EMAIL,
       key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-      ],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID as string, serviceAccountAuth);
-    await doc.loadInfo(); 
+    await doc.loadInfo();
     const sheet = doc.sheetsByIndex[0];
     await sheet.loadHeaderRow();
 
-    // Auto-create SCANNED COUNT column if missing
     if (!sheet.headerValues.includes('SCANNED COUNT')) {
       await sheet.setHeaderRow([...sheet.headerValues, 'SCANNED COUNT']);
     }
 
     const rows = await sheet.getRows();
-    
+
     const targetRow = rows.find(r => {
       const tid = r.get('TICKET ID') || '';
       const phone = r.get('PHONE') || r.get('PHONE NUMBER') || '';
-      return tid === cleanSearchId || tid === rawTicketId || (cleanSearchId.length >= 6 && tid.startsWith(cleanSearchId)) || phone === cleanSearchId;
+      return tid === cleanSearchId || tid === rawTicketId ||
+        (cleanSearchId.length >= 6 && tid.startsWith(cleanSearchId)) ||
+        phone === cleanSearchId;
     });
 
     if (!targetRow) {
-      let name = "Pass Holder";
-      let passesCount = parseInt(enteringCount) || 1;
-      let cleanTicketId = ticketId;
-      try {
-        const { jwtVerify } = await import("jose");
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-demo-only');
-        const { payload } = await jwtVerify(ticketId, secret);
-        name = (payload.name as string) || "Pass Holder";
-        passesCount = parseInt(payload.passes as string) || passesCount;
-        cleanTicketId = (payload.id as string) || ticketId;
-      } catch (e) {
-        // Raw UUID or fallback
-      }
-
-      const newScannedCount = parseInt(enteringCount) || 1;
-      const newStatus = (newScannedCount >= passesCount) ? 'Scanned' : 'Approved';
-
-      try {
-        await sheet.addRow({
-          'NAME': name,
-          'EMAIL': 'Offline Pass',
-          'PHONE': 'OFFLINE',
-          'PASSES': passesCount.toString(),
-          'SCREENTSHOT': 'Offline Pass',
-          'STATUS': newStatus,
-          'DATE': new Date().toISOString(),
-          'TICKET ID': cleanTicketId,
-          'SCANNED COUNT': newScannedCount.toString()
-        });
-      } catch (e) {
-        console.error("Error auto-adding missing row during scan confirmation:", e);
-      }
-
-      return NextResponse.json({ 
-        valid: true, 
-        message: "ENTRY CONFIRMED",
-        name: name,
-        passes: passesCount,
-        scannedCount: newScannedCount
-      });
+      return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
     const totalPasses = parseInt(targetRow.get('PASSES')) || 1;
     const currentScannedCount = parseInt(targetRow.get('SCANNED COUNT')) || 0;
-    
     const newScannedCount = currentScannedCount + parseInt(enteringCount);
 
     if (newScannedCount > totalPasses) {
       return NextResponse.json({ valid: false, message: "Cannot exceed total passes" }, { status: 400 });
     }
 
-    // Determine status
-    const newStatus = (newScannedCount === totalPasses) ? 'Scanned' : 'Approved';
-
-    // Update the row
-    // NOTE: For 'SCANNED COUNT' to be updated, the user must add it as a header in their Google Sheet!
-    // If it's missing, this might throw an error depending on google-spreadsheet version.
+    const newStatus = newScannedCount === totalPasses ? 'Scanned' : 'Approved';
     targetRow.set('SCANNED COUNT', newScannedCount.toString());
     targetRow.set('STATUS', newStatus);
-    
     await targetRow.save();
 
-    console.log(`Ticket ${ticketId}: ${enteringCount} people entered. Total Scanned: ${newScannedCount}/${totalPasses}`);
-
-    return NextResponse.json({ 
-      valid: true, 
+    return NextResponse.json({
+      valid: true,
       message: "ENTRY CONFIRMED",
       name: targetRow.get('NAME'),
       passes: totalPasses,

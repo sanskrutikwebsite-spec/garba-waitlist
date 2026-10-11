@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# guest passes (keep private — not for client repo)
+/public/guest-passes/
+/Sanskrutik_Guest_Passes.html
+/Sanskrutik_Guest_Passes.txt
+/Sanskrutik_Direct_Guest_10_Pass.txt
+/scratch/
+/src/data/guest_scans.json

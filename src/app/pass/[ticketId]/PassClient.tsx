@@ -1,8 +1,8 @@
 "use client";
 
-import { QRCodeCanvas } from "qrcode.react";
+import QRCode from "qrcode";
 import { Download, Share2 } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import * as htmlToImage from "html-to-image";
 
 type PassClientProps = {
@@ -14,22 +14,58 @@ type PassClientProps = {
 
 export default function PassClient({ ticketId, name, passes, qrData }: PassClientProps) {
   const passRef = useRef<HTMLDivElement>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (qrData) {
+      QRCode.toDataURL(qrData, {
+        width: 400,
+        margin: 1,
+        errorCorrectionLevel: "H",
+        color: {
+          dark: "#000000",
+          light: "#ffffff"
+        }
+      })
+        .then((url) => setQrDataUrl(url))
+        .catch((err) => console.error("Error generating QR data URL:", err));
+    }
+  }, [qrData]);
 
   const downloadPass = async () => {
     if (!passRef.current) return;
     try {
-      const dataUrl = await htmlToImage.toPng(passRef.current, { pixelRatio: 2 });
-      const filename = `Garba_Pass_${name.replace(/\\s+/g, '_')}.png`;
+      if (typeof document !== "undefined" && document.fonts) {
+        await document.fonts.ready;
+      }
 
-      // Try Web Share API first (best for mobile)
-      if (navigator.canShare) {
+      let dataUrl: string;
+      try {
+        dataUrl = await htmlToImage.toPng(passRef.current, {
+          pixelRatio: 2,
+          cacheBust: true,
+          backgroundColor: "#3a060d"
+        });
+      } catch (err) {
+        const html2canvas = (await import("html2canvas")).default;
+        const canvas = await html2canvas(passRef.current, {
+          scale: 2,
+          backgroundColor: "#3a060d"
+        });
+        dataUrl = canvas.toDataURL("image/png");
+      }
+
+      const filename = `Garba_Pass_${name.replace(/\s+/g, '_')}.png`;
+
+      // Try Web Share API first (best for mobile & iPhone to save directly to Photos)
+      if (typeof navigator !== "undefined" && navigator.canShare) {
         try {
           const res = await fetch(dataUrl);
           const blob = await res.blob();
           const file = new File([blob], filename, { type: 'image/png' });
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
-              title: 'Garba Pass',
+              title: 'Sanskrutik Garba Pass',
               files: [file]
             });
             return; // Successfully shared/saved
@@ -44,18 +80,18 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
       const link = document.createElement('a');
       link.download = filename;
       link.href = dataUrl;
-      document.body.appendChild(link); // Required for some browsers (e.g., Firefox)
+      document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (err) {
       console.error("Failed to download pass", err);
-      alert("Failed to download pass. Please screenshot instead.");
+      alert("Failed to download pass. Please take a screenshot of your pass instead.");
     }
   };
 
   const sharePassLink = async () => {
     const url = window.location.href;
-    if (navigator.share) {
+    if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
           title: 'Sanskrutik Garba Pass',
@@ -91,22 +127,27 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
         <h1 className="text-3xl font-black text-[#E3C57F] tracking-tight uppercase mb-1">Sanskrutik Garba</h1>
         <p className="text-sm tracking-[0.3em] text-white/70 font-bold uppercase mb-8">Official Entry Pass</p>
 
-        <div className="bg-white p-4 rounded-2xl mb-8 shadow-inner shadow-black/20">
-          <QRCodeCanvas
-            value={qrData}
-            size={200}
-            level="H"
-            includeMargin={false}
-            fgColor="#000000"
-            bgColor="#ffffff"
-          />
+        <div className="bg-white p-4 rounded-2xl mb-8 shadow-inner shadow-black/20 flex items-center justify-center min-w-[232px] min-h-[232px]">
+          {qrDataUrl ? (
+            <img
+              src={qrDataUrl}
+              alt="Pass QR Code"
+              className="w-[200px] h-[200px] block mx-auto select-none"
+            />
+          ) : (
+            <div className="w-[200px] h-[200px] flex items-center justify-center text-zinc-400 text-sm">
+              Loading QR Code...
+            </div>
+          )}
         </div>
 
         <div className="w-full flex flex-col gap-4">
-          <div className="flex flex-col">
-            <span className="text-xs uppercase tracking-widest text-white/50 font-bold">Pass Holder</span>
-            <span className="text-xl font-bold uppercase">{name}</span>
-          </div>
+          {name && name.trim() !== "" && (
+            <div className="flex flex-col">
+              <span className="text-xs uppercase tracking-widest text-white/50 font-bold">Pass Holder</span>
+              <span className="text-xl font-bold uppercase">{name}</span>
+            </div>
+          )}
 
           <div className="flex justify-between w-full border-t border-white/10 pt-4 mt-2">
             <div className="flex flex-col text-left">
@@ -125,14 +166,14 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
       <div className="flex flex-col sm:flex-row gap-4 w-full">
         <button 
           onClick={downloadPass}
-          className="flex-1 bg-[#E3C57F] text-black font-bold uppercase tracking-widest py-4 px-2 rounded-2xl hover:bg-[#cda434] transition-colors flex justify-center items-center gap-2 shadow-lg text-sm sm:text-base"
+          className="flex-1 bg-[#E3C57F] text-black font-bold uppercase tracking-widest py-4 px-2 rounded-2xl hover:bg-[#cda434] transition-colors flex justify-center items-center gap-2 shadow-lg text-sm sm:text-base cursor-pointer"
         >
           <Download size={20} />
           Save Image
         </button>
         <button 
           onClick={sharePassLink}
-          className="flex-1 bg-white/10 text-white border border-white/20 font-bold uppercase tracking-widest py-4 px-2 rounded-2xl hover:bg-white/20 transition-colors flex justify-center items-center gap-2 shadow-lg text-sm sm:text-base"
+          className="flex-1 bg-white/10 text-white border border-white/20 font-bold uppercase tracking-widest py-4 px-2 rounded-2xl hover:bg-white/20 transition-colors flex justify-center items-center gap-2 shadow-lg text-sm sm:text-base cursor-pointer"
         >
           <Share2 size={20} />
           Share Link
@@ -141,3 +182,4 @@ export default function PassClient({ ticketId, name, passes, qrData }: PassClien
     </div>
   );
 }
+
